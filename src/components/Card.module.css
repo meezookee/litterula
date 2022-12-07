@@ -1,0 +1,5 @@
+.card {
+  composes: neu from "./Neu.module.css";
+  padding: 2rem;
+  min-width: 40rem;
+}

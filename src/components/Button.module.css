@@ -1,22 +1,3 @@
-.neu {
-  --neu-radius: 0.5rem;
-
-  padding: 0.125rem;
-  border-radius: 0.5rem;
-  box-shadow: 0.25rem 0.25rem 0.5rem var(--m13),
-    -0.25rem -0.25rem 0.5rem var(--m15);
-}
-
-.neu > h1 {
-  margin: 0;
-  margin-bottom: 1em;
-}
-
-.buttons {
-  display: flex;
-  flex-direction: column;
-}
-
 .button {
   position: relative; /* to show border when hovered */
   width: 100%;

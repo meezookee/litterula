@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from "react";
-import { Link } from "react-router-dom";
 import FS, { PromisifiedFS } from "@isomorphic-git/lightning-fs";
-import assert from "assert";
-import "./Repositories.css";
-import Neu, { Buttons } from "../components/Neu";
+import styles from "./Repositories.module.css";
+import { Buttons } from "../components/Buttons";
+import Button from "../components/Button";
+import Card from "../components/Card";
 
 const Repositories = () => {
   const [repositoryNames, setRepositoryNames] = useState<string[]>([]);
@@ -18,27 +18,20 @@ const Repositories = () => {
   }, []);
 
   return (
-    <div className="repositories">
-      <Neu style={{ padding: "2rem", minWidth: "40rem" }}>
+    <div className={styles["repositories"]}>
+      <Card>
         <h1>Repositories</h1>
         <Buttons>
           {repositoryNames.map((repositoryName) => (
-            <Link key={repositoryName} to={repositoryName} className="button">
+            <Button key={repositoryName} link to={repositoryName}>
               {repositoryName}
-            </Link>
+            </Button>
           ))}
-          <button
-            className="button"
-            disabled={fs.current == null}
-            onClick={async () => {
-              assert(fs.current != null);
-              await fs.current.mkdir("/foo");
-            }}
-          >
+          <Button link to="/create_repository">
             Create a new repository
-          </button>
+          </Button>
         </Buttons>
-      </Neu>
+      </Card>
     </div>
   );
 };

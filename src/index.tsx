@@ -8,6 +8,7 @@ import ErrorPage from "./error-page";
 import Root from "./routes/Root";
 import Index from "./routes/Index";
 import Repositories from "./routes/Repositories";
+import CreateRepository from "./routes/CreateRepository";
 
 const router = createBrowserRouter([
   {
@@ -17,11 +18,15 @@ const router = createBrowserRouter([
     children: [
       { path: "/", element: <Index /> },
       { path: "/repositories", element: <Repositories /> },
+      { path: "/create_repository", element: <CreateRepository /> },
     ],
   },
 ]);
 
-const root = ReactDOM.createRoot(document.getElementById("root")!);
+const root = ReactDOM.createRoot(
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  document.getElementById("root")!
+);
 root.render(
   <React.StrictMode>
     <RouterProvider router={router} />

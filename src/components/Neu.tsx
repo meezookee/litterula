@@ -1,16 +1,8 @@
-import { ComponentPropsWithoutRef } from "react";
-import c from "classnames";
-import "./Neu.css";
+import { ReactNode } from "react";
+import styles from "./Neu.module.css";
 
-const Neu = ({ className, ...props }: ComponentPropsWithoutRef<"div">) => (
-  <div className={c("neu", className)} {...props} />
-);
-
-export const Buttons = ({
-  className,
-  ...props
-}: ComponentPropsWithoutRef<"div">) => (
-  <Neu className={c("buttons", className)} {...props} />
+export const Neu = ({ children }: { children: ReactNode[] }) => (
+  <div className={styles.neu}>{children}</div>
 );
 
 export default Neu;

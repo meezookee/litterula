@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 
 const Index = () => (
-  <div className="index">
+  <div>
     <h1>Litterula</h1>
     <ul>
       <li>

@@ -1,8 +1,8 @@
 import { Outlet } from "react-router-dom";
-import "./Root.css";
+import styles from "./Root.module.css";
 
 const Root = () => (
-  <div className="root">
+  <div className={styles["root"]}>
     <Outlet />
   </div>
 );

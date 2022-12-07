@@ -1,0 +1,5 @@
+.buttons {
+  composes: neu from "./Neu.module.css";
+  display: flex;
+  flex-direction: column;
+}
