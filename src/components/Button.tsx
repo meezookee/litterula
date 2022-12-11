@@ -5,14 +5,14 @@ import styles from "./Button.module.css";
 const Button = (
   props:
     | ({ link: true } & LinkProps)
-    | ({ link: false } & ComponentPropsWithoutRef<"div">)
+    | ({ link?: false } & ComponentPropsWithoutRef<"span">)
 ) => {
   if (props.link) {
     const { link: _, ...linkProps } = props;
     return <Link className={styles.button} {...linkProps} />;
   } else {
     const { link: _, ...divProps } = props;
-    return <div className={styles.button} {...divProps} />;
+    return <span className={styles.button} {...divProps} />;
   }
 };
 

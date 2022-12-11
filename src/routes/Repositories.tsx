@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import FS, { PromisifiedFS } from "@isomorphic-git/lightning-fs";
 import styles from "./Repositories.module.css";
-import { Buttons } from "../components/Buttons";
+import Buttons from "../components/Buttons";
 import Button from "../components/Button";
 import Card from "../components/Card";
 
