@@ -8,11 +8,20 @@ const meta: ComponentMeta<typeof Buttons> = {
 };
 export default meta;
 
-export const Default = () => (
+export const Single = () => (
+  <div style={{ display: "inline-block" }}>
+    <Buttons>
+      <Button>Button</Button>
+    </Buttons>
+  </div>
+);
+
+export const Multiple = () => (
   <div style={{ display: "inline-block" }}>
     <Buttons>
       <Button>Button 1</Button>
       <Button>Button 2</Button>
+      <Button>Button 3</Button>
     </Buttons>
   </div>
 );
