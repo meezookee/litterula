@@ -1,0 +1,21 @@
+.repository {
+  display: grid;
+  grid-template:
+    1fr
+    / 1fr 1fr 1fr;
+  height: 100%;
+  gap: 1rem;
+  padding: 1rem;
+}
+
+.folded-directory > .directory-name::before {
+  content: "> ";
+}
+
+.unfolded-directory > .directory-name::before {
+  content: "v ";
+}
+
+.entries {
+  padding-left: 1rem;
+}

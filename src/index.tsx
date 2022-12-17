@@ -7,8 +7,13 @@ import reportWebVitals from "./reportWebVitals";
 import ErrorPage from "./error-page";
 import Root from "./routes/Root";
 import Index from "./routes/Index";
-import Repositories from "./routes/Repositories";
-import CreateRepository from "./routes/CreateRepository";
+import Repositories, {
+  loader as repositoriesLoader,
+} from "./routes/Repositories";
+import CreateRepository, {
+  action as createRepositoryAction,
+} from "./routes/CreateRepository";
+import Repository from "./routes/Repository";
 
 const router = createBrowserRouter([
   {
@@ -17,8 +22,20 @@ const router = createBrowserRouter([
     errorElement: <ErrorPage />,
     children: [
       { path: "/", element: <Index /> },
-      { path: "/repositories", element: <Repositories /> },
-      { path: "/create_repository", element: <CreateRepository /> },
+      {
+        path: "/repositories",
+        element: <Repositories />,
+        loader: repositoriesLoader,
+      },
+      {
+        path: "/repositories/:repositoryName",
+        element: <Repository />,
+      },
+      {
+        path: "/create_repository",
+        element: <CreateRepository />,
+        action: createRepositoryAction,
+      },
     ],
   },
 ]);

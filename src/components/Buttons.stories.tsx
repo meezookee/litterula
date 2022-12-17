@@ -1,4 +1,4 @@
-import Button from "./Button";
+import LinkButton from "./LinkButton";
 import Buttons from "./Buttons";
 import { ComponentMeta } from "@storybook/react";
 
@@ -11,7 +11,7 @@ export default meta;
 export const Single = () => (
   <div style={{ display: "inline-block" }}>
     <Buttons>
-      <Button>Button</Button>
+      <LinkButton to="">Button</LinkButton>
     </Buttons>
   </div>
 );
@@ -19,9 +19,9 @@ export const Single = () => (
 export const Multiple = () => (
   <div style={{ display: "inline-block" }}>
     <Buttons>
-      <Button>Button 1</Button>
-      <Button>Button 2</Button>
-      <Button>Button 3</Button>
+      <LinkButton to="">Button 1</LinkButton>
+      <LinkButton to="">Button 2</LinkButton>
+      <LinkButton to="">Button 3</LinkButton>
     </Buttons>
   </div>
 );

@@ -1,21 +1,14 @@
-import { useEffect, useRef, useState } from "react";
-import FS, { PromisifiedFS } from "@isomorphic-git/lightning-fs";
 import styles from "./Repositories.module.css";
 import Buttons from "../components/Buttons";
-import Button from "../components/Button";
+import LinkButton from "../components/LinkButton";
 import Card from "../components/Card";
+import { LoaderFunction, useLoaderData } from "react-router-dom";
+import { pfs } from "../fs";
+
+export const loader: LoaderFunction = () => pfs.readdir("/");
 
 const Repositories = () => {
-  const [repositoryNames, setRepositoryNames] = useState<string[]>([]);
-
-  const fs = useRef<PromisifiedFS>();
-
-  useEffect(() => {
-    if (fs.current == null) {
-      fs.current = new FS("litterula").promises;
-    }
-    fs.current.readdir("/").then(setRepositoryNames);
-  }, []);
+  const repositoryNames = useLoaderData() as string[];
 
   return (
     <div className={styles["repositories"]}>
@@ -23,13 +16,13 @@ const Repositories = () => {
         <h1>Repositories</h1>
         <Buttons>
           {repositoryNames.map((repositoryName) => (
-            <Button key={repositoryName} link to={repositoryName}>
+            <LinkButton key={repositoryName} to={repositoryName}>
               {repositoryName}
-            </Button>
+            </LinkButton>
           ))}
-          <Button link to="/create_repository">
+          <LinkButton to="/create_repository">
             Create a new repository
-          </Button>
+          </LinkButton>
         </Buttons>
       </Card>
     </div>
