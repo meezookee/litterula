@@ -4,6 +4,7 @@
   "private": true,
   "dependencies": {
     "@isomorphic-git/lightning-fs": "^4.6.0",
+    "@primer/octicons-react": "^17.10.0",
     "@storybook/addon-actions": "^6.5.14",
     "@storybook/addon-essentials": "^6.5.14",
     "@storybook/addon-interactions": "^6.5.14",

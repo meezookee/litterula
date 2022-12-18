@@ -2,8 +2,12 @@ import { useParams } from "react-router-dom";
 import { strict as assert } from "assert";
 import { useEffect, useState } from "react";
 import { Stats } from "@isomorphic-git/lightning-fs";
-import c from "classnames";
 import { pfs } from "../fs";
+import {
+  ChevronDownIcon,
+  ChevronRightIcon,
+  FileIcon,
+} from "@primer/octicons-react";
 import styles from "./Repository.module.css";
 
 const Repository = () => {
@@ -53,7 +57,12 @@ const Entry = ({ path }: { path: string }) => {
   if (stats?.isDirectory()) {
     return <Directory path={path} />;
   }
-  return <div>file {path}</div>;
+  return (
+    <div>
+      <FileIcon />
+      <span>{path}</span>
+    </div>
+  );
 };
 
 const Directory = ({ path }: { path: string }) => {
@@ -71,16 +80,10 @@ const Directory = ({ path }: { path: string }) => {
   }, [path, isFolded]);
 
   return (
-    <div
-      className={
-        isFolded ? styles["folded-directory"] : styles["unfolded-directory"]
-      }
-    >
-      <div
-        className={styles["directory-name"]}
-        onClick={() => setFolded((isFolded) => !isFolded)}
-      >
-        {path}
+    <div>
+      <div onClick={() => setFolded((isFolded) => !isFolded)}>
+        {isFolded ? <ChevronRightIcon /> : <ChevronDownIcon />}
+        <span>{path}</span>
       </div>
       {!isFolded && (
         <div className={styles.entries}>
