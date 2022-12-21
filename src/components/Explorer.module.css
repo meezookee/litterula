@@ -1,0 +1,31 @@
+.explorer {
+  composes: neu from "./Neu.module.css";
+}
+
+.header {
+  padding: 0.25rem 0.5rem;
+  font-weight: bold;
+}
+
+.entry {
+  display: grid;
+  align-items: center;
+  gap: 0.25rem;
+  grid-template: auto / 1rem auto;
+}
+
+.entry:hover {
+  background-color: var(--m13);
+}
+
+.entry:active {
+  background-color: var(--m12);
+}
+
+.entries {
+  padding-left: 1.25rem;
+}
+
+.hidden {
+  display: none;
+}

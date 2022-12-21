@@ -36,7 +36,7 @@
     "react-router-dom": "^6.4.4",
     "react-scripts": "5.0.1",
     "slate": "^0.87.0",
-    "slate-react": "^0.87.0",
+    "slate-react": "^0.88.0",
     "stylelint": "^14.15.0",
     "stylelint-config-css-modules": "^4.1.0",
     "stylelint-config-prettier": "^9.0.4",
