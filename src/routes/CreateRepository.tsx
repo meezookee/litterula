@@ -32,9 +32,11 @@ const CreateRepository = () => {
           Repository name
         </label>
         <TextInput id="repository-name" name="repository-name" />
-        <Buttons style={{ gridColumn: "2" }}>
-          <SubmitButton primary>Create repository</SubmitButton>
-        </Buttons>
+        <div style={{ gridColumn: "2" }}>
+          <Buttons>
+            <SubmitButton primary>Create repository</SubmitButton>
+          </Buttons>
+        </div>
       </Card>
     </Form>
   );

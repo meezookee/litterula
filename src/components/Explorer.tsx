@@ -4,11 +4,15 @@ import { Stats } from "@isomorphic-git/lightning-fs";
 import {
   ChevronDownIcon,
   ChevronRightIcon,
+  FileDirectoryIcon,
   FileIcon,
+  TrashIcon,
 } from "@primer/octicons-react";
 import { basename } from "@isomorphic-git/lightning-fs/src/path";
 import { pfs } from "../fs";
 import styles from "./Explorer.module.css";
+import Buttons from "./Buttons";
+import Button from "./Button";
 
 const Explorer = ({ path }: { path: string }) => {
   const [paths, setPaths] = useState<string[]>([]);
@@ -23,7 +27,17 @@ const Explorer = ({ path }: { path: string }) => {
 
   return (
     <div className={styles.explorer}>
-      <div className={styles.header}>{path}</div>
+      <div className={styles.header}>
+        <div>{path}</div>
+        <Buttons small>
+          <Button>
+            <FileIcon />
+          </Button>
+          <Button>
+            <FileDirectoryIcon />
+          </Button>
+        </Buttons>
+      </div>
       <div>
         {paths.map((path) => (
           <Entry key={path} path={path} />
@@ -70,6 +84,16 @@ const Directory = ({ path }: { path: string }) => {
       >
         {isFolded ? <ChevronRightIcon /> : <ChevronDownIcon />}
         <span>{basename(path)}</span>
+        <div className={styles.buttons}>
+          <Buttons small>
+            <Button>
+              <FileIcon />
+            </Button>
+            <Button>
+              <FileDirectoryIcon />
+            </Button>
+          </Buttons>
+        </div>
       </div>
       <div className={c(styles.entries, isFolded && styles.hidden)}>
         {paths.map((path) => (
@@ -84,6 +108,13 @@ const File = ({ path }: { path: string }) => (
   <div className={styles.entry} tabIndex={0}>
     <FileIcon />
     <span>{basename(path)}</span>
+    <div className={styles.buttons}>
+      <Buttons small>
+        <Button danger>
+          <TrashIcon />
+        </Button>
+      </Buttons>
+    </div>
   </div>
 );
 

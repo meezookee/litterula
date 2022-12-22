@@ -14,7 +14,7 @@ const Repositories = () => {
     <div className={styles["repositories"]}>
       <Card>
         <h1>Repositories</h1>
-        <Buttons>
+        <Buttons vertical>
           {repositoryNames.map((repositoryName) => (
             <LinkButton key={repositoryName} to={repositoryName}>
               {repositoryName}

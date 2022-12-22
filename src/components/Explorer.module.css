@@ -1,9 +1,14 @@
 .explorer {
   composes: neu from "./Neu.module.css";
+  padding: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
 }
 
 .header {
-  padding: 0.25rem 0.5rem;
+  display: flex;
+  justify-content: space-between;
   font-weight: bold;
 }
 
@@ -11,21 +16,32 @@
   display: grid;
   align-items: center;
   gap: 0.25rem;
-  grid-template: auto / 1rem auto;
+  grid-template: auto / 1rem auto min-content;
 }
 
 .entry:hover {
-  background-color: var(--m13);
+  border-radius: 0.5rem;
+  box-shadow: 0.25rem 0.25rem 0.5rem var(--m13),
+    -0.25rem -0.25rem 0.5rem var(--m15);
 }
 
 .entry:active {
-  background-color: var(--m12);
+  box-shadow: inset 0.25rem 0.25rem 0.5rem var(--m13),
+    inset -0.25rem -0.25rem 0.5rem var(--m15);
 }
 
 .entries {
-  padding-left: 1.25rem;
+  padding-inline-start: 1.25rem;
 }
 
 .hidden {
   display: none;
+}
+
+.buttons {
+  visibility: hidden;
+}
+
+.entry:hover > .buttons {
+  visibility: inherit;
 }

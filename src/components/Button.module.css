@@ -1,22 +1,25 @@
+.buttons {
+  composes: neu from "./Neu.module.css";
+  display: flex;
+}
+
+.vertical {
+  flex-direction: column;
+}
+
 .button {
   width: 100%;
   padding: 0.5rem 1rem;
   border: 0.125rem solid transparent;
   border-color: var(--m13);
-  margin-bottom: -0.125rem;
   text-align: start;
   cursor: pointer;
+  display: flex;
+  align-items: center;
 }
 
-.button:first-child {
-  border-top-left-radius: 0.375rem;
-  border-top-right-radius: 0.375rem;
-}
-
-.button:last-child {
-  border-bottom-left-radius: 0.375rem;
-  border-bottom-right-radius: 0.375rem;
-  margin-bottom: 0;
+.small > button {
+  padding: 0.25rem 0.5rem;
 }
 
 .button:link {
@@ -52,4 +55,49 @@
 .button.primary:active {
   box-shadow: inset 0.25rem 0.25rem 0.5rem var(--g13),
     inset -0.25rem -0.25rem 0.5rem var(--g15);
+}
+
+.button.danger {
+  font-weight: bold;
+  background-color: var(--r14);
+  border-color: var(--r13);
+}
+
+.button.danger:hover {
+  border-color: var(--r12);
+}
+
+.button.danger:active {
+  box-shadow: inset 0.25rem 0.25rem 0.5rem var(--r13),
+    inset -0.25rem -0.25rem 0.5rem var(--r15);
+}
+
+.vertical > .button {
+  margin-block-end: -0.125rem;
+}
+
+:not(.vertical) > .button {
+  margin-inline-end: -0.125rem;
+}
+
+:not(.vertical) > .button:first-child {
+  border-start-start-radius: 0.375rem;
+  border-end-start-radius: 0.375rem;
+}
+
+:not(.vertical) > .button:last-child {
+  border-start-end-radius: 0.375rem;
+  border-end-end-radius: 0.375rem;
+  margin-inline-end: 0;
+}
+
+.vertical > .button:first-child {
+  border-start-start-radius: 0.375rem;
+  border-start-end-radius: 0.375rem;
+}
+
+.vertical > .button:last-child {
+  border-end-start-radius: 0.375rem;
+  border-end-end-radius: 0.375rem;
+  margin-block-end: 0;
 }
