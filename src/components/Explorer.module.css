@@ -3,7 +3,7 @@
   padding: 0.5rem;
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 1rem;
 }
 
 .header {
@@ -16,7 +16,8 @@
   display: grid;
   align-items: center;
   gap: 0.25rem;
-  grid-template: auto / 1rem auto min-content;
+  grid-template: auto / 1.75rem auto min-content;
+  padding-left: 0.25rem;
 }
 
 .entry:hover {
@@ -31,7 +32,7 @@
 }
 
 .entries {
-  padding-inline-start: 1.25rem;
+  padding-inline-start: 1.75rem;
 }
 
 .hidden {

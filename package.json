@@ -4,7 +4,6 @@
   "private": true,
   "dependencies": {
     "@isomorphic-git/lightning-fs": "^4.6.0",
-    "@primer/octicons-react": "^17.10.0",
     "@storybook/addon-actions": "^6.5.14",
     "@storybook/addon-essentials": "^6.5.14",
     "@storybook/addon-interactions": "^6.5.14",
@@ -33,6 +32,7 @@
     "prop-types": "^15.8.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "react-feather": "^2.0.10",
     "react-router-dom": "^6.4.4",
     "react-scripts": "5.0.1",
     "slate": "^0.87.0",

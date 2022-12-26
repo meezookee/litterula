@@ -1,14 +1,8 @@
 import { useEffect, useState } from "react";
 import c from "classnames";
 import { Stats } from "@isomorphic-git/lightning-fs";
-import {
-  ChevronDownIcon,
-  ChevronRightIcon,
-  FileDirectoryIcon,
-  FileIcon,
-  TrashIcon,
-} from "@primer/octicons-react";
 import { basename } from "@isomorphic-git/lightning-fs/src/path";
+import * as Icon from "react-feather";
 import { pfs } from "../fs";
 import styles from "./Explorer.module.css";
 import Buttons from "./Buttons";
@@ -31,10 +25,10 @@ const Explorer = ({ path }: { path: string }) => {
         <div>{path}</div>
         <Buttons small>
           <Button>
-            <FileIcon />
+            <Icon.FilePlus />
           </Button>
           <Button>
-            <FileDirectoryIcon />
+            <Icon.FolderPlus />
           </Button>
         </Buttons>
       </div>
@@ -82,15 +76,15 @@ const Directory = ({ path }: { path: string }) => {
         tabIndex={0}
         onClick={() => setFolded((isFolded) => !isFolded)}
       >
-        {isFolded ? <ChevronRightIcon /> : <ChevronDownIcon />}
+        {isFolded ? <Icon.ChevronRight /> : <Icon.ChevronDown />}
         <span>{basename(path)}</span>
         <div className={styles.buttons}>
           <Buttons small>
             <Button>
-              <FileIcon />
+              <Icon.FilePlus />
             </Button>
             <Button>
-              <FileDirectoryIcon />
+              <Icon.FolderPlus />
             </Button>
           </Buttons>
         </div>
@@ -106,12 +100,12 @@ const Directory = ({ path }: { path: string }) => {
 
 const File = ({ path }: { path: string }) => (
   <div className={styles.entry} tabIndex={0}>
-    <FileIcon />
+    <Icon.File />
     <span>{basename(path)}</span>
     <div className={styles.buttons}>
       <Buttons small>
         <Button danger>
-          <TrashIcon />
+          <Icon.Trash />
         </Button>
       </Buttons>
     </div>
