@@ -1,18 +1,24 @@
-import { useParams } from "react-router-dom";
+import { Outlet, useParams } from "react-router-dom";
 import { strict as assert } from "assert";
-import styles from "./Repository.module.css";
 import Explorer from "../components/Explorer";
+import { Col, Container, Row } from "react-bootstrap";
 
 const Repository = () => {
-  const directory = useParams().repositoryName;
-  assert(directory != null);
+  const { repositoryName } = useParams();
+  assert(repositoryName != null);
 
   return (
-    <div className={styles.repository}>
-      <Explorer path={directory} />
-      <div>center</div>
-      <div>right</div>
-    </div>
+    <Container fluid>
+      <Row>
+        <Col>
+          <Explorer path={repositoryName} />
+        </Col>
+        <Col>
+          <Outlet />
+        </Col>
+        <Col></Col>
+      </Row>
+    </Container>
   );
 };
 

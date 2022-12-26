@@ -5,38 +5,21 @@ import "./index.css";
 import * as serviceWorkerRegistration from "./serviceWorkerRegistration";
 import reportWebVitals from "./reportWebVitals";
 import ErrorPage from "./error-page";
-import Root from "./routes/Root";
-import Index from "./routes/Index";
-import Repositories, {
-  loader as repositoriesLoader,
-} from "./routes/Repositories";
-import CreateRepository, {
-  action as createRepositoryAction,
-} from "./routes/CreateRepository";
-import Repository from "./routes/Repository";
+import Root, { loader as rootLoader } from "./routes/root";
+import Repository from "./routes/repository";
+import Editor from "./routes/editor";
 
 const router = createBrowserRouter([
   {
     path: "/",
     element: <Root />,
     errorElement: <ErrorPage />,
-    children: [
-      { path: "/", element: <Index /> },
-      {
-        path: "/repositories",
-        element: <Repositories />,
-        loader: repositoriesLoader,
-      },
-      {
-        path: "/repositories/:repositoryName",
-        element: <Repository />,
-      },
-      {
-        path: "/create_repository",
-        element: <CreateRepository />,
-        action: createRepositoryAction,
-      },
-    ],
+    loader: rootLoader,
+  },
+  {
+    path: "/repositories/:repositoryName",
+    element: <Repository />,
+    children: [{ path: "*", element: <Editor /> }],
   },
 ]);
 

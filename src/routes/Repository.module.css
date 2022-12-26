@@ -1,9 +1,0 @@
-.repository {
-  display: grid;
-  grid-template:
-    1fr
-    / 1fr 1fr 1fr;
-  height: 100%;
-  gap: 1rem;
-  padding: 1rem;
-}
