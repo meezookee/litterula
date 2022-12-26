@@ -1,9 +1,7 @@
-import styles from "./Repositories.module.css";
-import Buttons from "../components/Buttons";
-import LinkButton from "../components/LinkButton";
-import Card from "../components/Card";
+import { Button, ButtonGroup } from "react-bootstrap";
 import { LoaderFunction, useLoaderData } from "react-router-dom";
 import { pfs } from "../fs";
+import { LinkContainer } from "react-router-bootstrap";
 
 export const loader: LoaderFunction = () => pfs.readdir("/");
 
@@ -11,20 +9,18 @@ const Repositories = () => {
   const repositoryNames = useLoaderData() as string[];
 
   return (
-    <div className={styles["repositories"]}>
-      <Card>
-        <h1>Repositories</h1>
-        <Buttons vertical>
-          {repositoryNames.map((repositoryName) => (
-            <LinkButton key={repositoryName} to={repositoryName}>
-              {repositoryName}
-            </LinkButton>
-          ))}
-          <LinkButton to="/create_repository">
-            Create a new repository
-          </LinkButton>
-        </Buttons>
-      </Card>
+    <div>
+      <h1>Repositories</h1>
+      <ButtonGroup vertical>
+        {repositoryNames.map((repositoryName) => (
+          <LinkContainer key={repositoryName} to={repositoryName}>
+            <Button>{repositoryName}</Button>
+          </LinkContainer>
+        ))}
+        <LinkContainer to="/create_repository">
+          <Button>Create a new repository</Button>
+        </LinkContainer>
+      </ButtonGroup>
     </div>
   );
 };

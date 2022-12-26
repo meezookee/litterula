@@ -2,11 +2,10 @@ import { useEffect, useState } from "react";
 import c from "classnames";
 import { Stats } from "@isomorphic-git/lightning-fs";
 import { basename } from "@isomorphic-git/lightning-fs/src/path";
-import * as Icon from "react-feather";
 import { pfs } from "../fs";
 import styles from "./Explorer.module.css";
-import Buttons from "./Buttons";
-import Button from "./Button";
+import { ButtonGroup, Button } from "react-bootstrap";
+import * as Icon from "react-bootstrap-icons";
 
 const Explorer = ({ path }: { path: string }) => {
   const [paths, setPaths] = useState<string[]>([]);
@@ -23,14 +22,14 @@ const Explorer = ({ path }: { path: string }) => {
     <div className={styles.explorer}>
       <div className={styles.header}>
         <div>{path}</div>
-        <Buttons small>
+        <ButtonGroup>
           <Button>
-            <Icon.FilePlus />
+            <Icon.FileEarmarkPlus />
           </Button>
           <Button>
             <Icon.FolderPlus />
           </Button>
-        </Buttons>
+        </ButtonGroup>
       </div>
       <div>
         {paths.map((path) => (
@@ -79,14 +78,14 @@ const Directory = ({ path }: { path: string }) => {
         {isFolded ? <Icon.ChevronRight /> : <Icon.ChevronDown />}
         <span>{basename(path)}</span>
         <div className={styles.buttons}>
-          <Buttons small>
+          <ButtonGroup>
             <Button>
-              <Icon.FilePlus />
+              <Icon.FileEarmarkPlus />
             </Button>
             <Button>
               <Icon.FolderPlus />
             </Button>
-          </Buttons>
+          </ButtonGroup>
         </div>
       </div>
       <div className={c(styles.entries, isFolded && styles.hidden)}>
@@ -100,14 +99,14 @@ const Directory = ({ path }: { path: string }) => {
 
 const File = ({ path }: { path: string }) => (
   <div className={styles.entry} tabIndex={0}>
-    <Icon.File />
+    <Icon.FileEarmark />
     <span>{basename(path)}</span>
     <div className={styles.buttons}>
-      <Buttons small>
-        <Button danger>
+      <ButtonGroup>
+        <Button variant="danger">
           <Icon.Trash />
         </Button>
-      </Buttons>
+      </ButtonGroup>
     </div>
   </div>
 );

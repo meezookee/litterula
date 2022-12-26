@@ -1,5 +1,4 @@
 .explorer {
-  composes: neu from "./Neu.module.css";
   padding: 0.5rem;
   display: flex;
   flex-direction: column;
