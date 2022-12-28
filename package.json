@@ -19,6 +19,7 @@
     "buffer": "^6.0.3",
     "classnames": "^2.3.2",
     "eslint": "^8.29.0",
+    "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-react": "^7.31.11",
     "isomorphic-git": "^1.21.0",
     "react": "^18.2.0",
@@ -63,7 +64,9 @@
       "eslint:recommended",
       "plugin:react/recommended",
       "plugin:react/jsx-runtime",
-      "plugin:@typescript-eslint/recommended"
+      "plugin:@typescript-eslint/recommended",
+      "plugin:import/recommended",
+      "plugin:import/typescript"
     ],
     "parser": "@typescript-eslint/parser",
     "parserOptions": {
@@ -73,7 +76,10 @@
     "plugins": [
       "react",
       "@typescript-eslint"
-    ]
+    ],
+    "rules": {
+      "import/order": "warn"
+    }
   },
   "stylelint": {
     "extends": [

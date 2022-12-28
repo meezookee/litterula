@@ -2,10 +2,10 @@ import { useEffect, useState } from "react";
 import c from "classnames";
 import { Stats } from "@isomorphic-git/lightning-fs";
 import { basename } from "@isomorphic-git/lightning-fs/src/path";
-import { pfs } from "../fs";
-import styles from "./Explorer.module.css";
 import { ButtonGroup, Button } from "react-bootstrap";
 import * as Icon from "react-bootstrap-icons";
+import { pfs } from "../fs";
+import styles from "./Explorer.module.css";
 
 const Explorer = ({ path }: { path: string }) => {
   const [paths, setPaths] = useState<string[]>([]);
