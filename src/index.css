@@ -1,1 +1,6 @@
-@import url("bootstrap");
+@import url("sanitize/*");
+
+body {
+  color: #000;
+  background-color: #fff;
+}

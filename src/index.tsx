@@ -1,7 +1,7 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import { Spinner } from "react-bootstrap";
+import { ThemeProvider, Spinner } from "@primer/react";
 import "./index.css";
 import * as serviceWorkerRegistration from "./serviceWorkerRegistration";
 import reportWebVitals from "./reportWebVitals";
@@ -30,7 +30,9 @@ const root = ReactDOM.createRoot(
 );
 root.render(
   <React.StrictMode>
-    <RouterProvider router={router} fallbackElement={<Spinner />} />
+    <ThemeProvider>
+      <RouterProvider router={router} fallbackElement={<Spinner />} />
+    </ThemeProvider>
   </React.StrictMode>
 );
 

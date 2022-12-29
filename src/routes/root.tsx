@@ -1,7 +1,6 @@
 import { Options } from "@isomorphic-git/lightning-fs";
-import { Button, Container, ListGroup, Stack } from "react-bootstrap";
-import { LinkContainer } from "react-router-bootstrap";
-import { LoaderFunction, redirect } from "react-router-dom";
+import { Box, Button } from "@primer/react";
+import { Link, LoaderFunction, redirect } from "react-router-dom";
 import * as git from "isomorphic-git";
 import { pfs, fs } from "../fs";
 
@@ -25,14 +24,12 @@ Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deseru
 };
 
 const Root = () => (
-  <Container>
-    <Stack gap={3}>
+  <Box>
+    <Box>
       <h1>Litterula</h1>
-      <ListGroup>
-        <LinkContainer to="/repositories">
-          <ListGroup.Item action>repositories</ListGroup.Item>
-        </LinkContainer>
-      </ListGroup>
+      <Box>
+        <Link to="/repositories">repositories</Link>
+      </Box>
       <Button
         onClick={() => {
           pfs.init("litterula", { wipe: true } as Options);
@@ -40,8 +37,8 @@ const Root = () => (
       >
         Wipe file system
       </Button>
-    </Stack>
-  </Container>
+    </Box>
+  </Box>
 );
 
 export default Root;

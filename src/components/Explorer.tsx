@@ -1,11 +1,10 @@
-import { useEffect, useState } from "react";
-import c from "classnames";
+import { ReactNode, useEffect, useState } from "react";
 import { Stats } from "@isomorphic-git/lightning-fs";
 import { basename } from "@isomorphic-git/lightning-fs/src/path";
-import { ButtonGroup, Button } from "react-bootstrap";
-import * as Icon from "react-bootstrap-icons";
+import * as Icon from "@primer/octicons-react";
+import { NavList } from "@primer/react";
+import { Link, To, useMatch, useResolvedPath } from "react-router-dom";
 import { pfs } from "../fs";
-import styles from "./Explorer.module.css";
 
 const Explorer = ({ path }: { path: string }) => {
   const [paths, setPaths] = useState<string[]>([]);
@@ -19,24 +18,11 @@ const Explorer = ({ path }: { path: string }) => {
   }, [path]);
 
   return (
-    <div className={styles.explorer}>
-      <div className={styles.header}>
-        <div>{path}</div>
-        <ButtonGroup>
-          <Button>
-            <Icon.FileEarmarkPlus />
-          </Button>
-          <Button>
-            <Icon.FolderPlus />
-          </Button>
-        </ButtonGroup>
-      </div>
-      <div>
-        {paths.map((path) => (
-          <Entry key={path} path={path} />
-        ))}
-      </div>
-    </div>
+    <NavList>
+      {paths.map((path) => (
+        <Entry key={path} path={path} />
+      ))}
+    </NavList>
   );
 };
 
@@ -70,45 +56,42 @@ const Directory = ({ path }: { path: string }) => {
 
   return (
     <>
-      <div
-        className={styles.entry}
-        tabIndex={0}
-        onClick={() => setFolded((isFolded) => !isFolded)}
-      >
-        {isFolded ? <Icon.ChevronRight /> : <Icon.ChevronDown />}
-        <span>{basename(path)}</span>
-        <div className={styles.buttons}>
-          <ButtonGroup>
-            <Button>
-              <Icon.FileEarmarkPlus />
-            </Button>
-            <Button>
-              <Icon.FolderPlus />
-            </Button>
-          </ButtonGroup>
-        </div>
-      </div>
-      <div className={c(styles.entries, isFolded && styles.hidden)}>
-        {paths.map((path) => (
-          <Entry key={path} path={path} />
-        ))}
-      </div>
+      <NavList.Item onClick={() => setFolded((isFolded) => !isFolded)}>
+        <NavList.LeadingVisual>
+          <Icon.FileDirectoryIcon />
+        </NavList.LeadingVisual>
+        {basename(path)}
+        <NavList.SubNav>
+          {paths.map((path) => (
+            <Entry key={path} path={path} />
+          ))}
+        </NavList.SubNav>
+      </NavList.Item>
     </>
   );
 };
 
 const File = ({ path }: { path: string }) => (
-  <div className={styles.entry} tabIndex={0}>
-    <Icon.FileEarmark />
-    <span>{basename(path)}</span>
-    <div className={styles.buttons}>
-      <ButtonGroup>
-        <Button variant="danger">
-          <Icon.Trash />
-        </Button>
-      </ButtonGroup>
-    </div>
-  </div>
+  <NavItem to={`/repositories${path}`}>
+    <NavList.LeadingVisual>
+      <Icon.FileIcon />
+    </NavList.LeadingVisual>
+    {basename(path)}
+  </NavItem>
 );
+
+const NavItem = ({ to, children }: { to: To; children: ReactNode }) => {
+  const resolved = useResolvedPath(to);
+  const isCurrent = useMatch({ path: resolved.pathname, end: true });
+  return (
+    <NavList.Item
+      as={Link}
+      to={to}
+      aria-current={isCurrent ? "page" : undefined}
+    >
+      {children}
+    </NavList.Item>
+  );
+};
 
 export default Explorer;
