@@ -1,12 +1,13 @@
-import { strict as assert } from "assert";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { pfs } from "../fs";
+import { assert, assertNonNullable } from "../util";
 
 const Editor = () => {
   const [data, setData] = useState<string>();
   const { repositoryName, "*": path } = useParams();
-  assert(repositoryName != null && path != null);
+  assertNonNullable(repositoryName);
+  assertNonNullable(path);
 
   useEffect(() => {
     pfs
