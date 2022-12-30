@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { pfs } from "../fs";
 import { assert, assertNonNullable } from "../util";
+import EditorComponent from "../components/Editor";
 
 const Editor = () => {
   const [data, setData] = useState<string>();
@@ -18,7 +19,7 @@ const Editor = () => {
       });
   }, [path, repositoryName]);
 
-  return <pre>{data}</pre>;
+  return data ? <EditorComponent initialValue={data} /> : null;
 };
 
 export default Editor;
