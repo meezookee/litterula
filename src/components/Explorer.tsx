@@ -1,11 +1,12 @@
-import { ReactNode, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Stats } from "@isomorphic-git/lightning-fs";
 import { basename } from "@isomorphic-git/lightning-fs/src/path";
 import * as Icon from "@primer/octicons-react";
-import { NavList } from "@primer/react";
-import { Link, To, useMatch, useResolvedPath } from "react-router-dom";
+import { ActionList, Box } from "@primer/react";
+import { Link, useMatch } from "react-router-dom";
 import { pfs } from "../fs";
 
+// TODO: Open directory when page is transitioned
 const Explorer = ({ path }: { path: string }) => {
   const [paths, setPaths] = useState<string[]>([]);
 
@@ -18,15 +19,15 @@ const Explorer = ({ path }: { path: string }) => {
   }, [path]);
 
   return (
-    <NavList>
+    <ActionList>
       {paths.map((path) => (
-        <Entry key={path} path={path} />
+        <Entry key={path} path={path} depth={0} />
       ))}
-    </NavList>
+    </ActionList>
   );
 };
 
-const Entry = ({ path }: { path: string }) => {
+const Entry = ({ path, depth }: { path: string; depth: number }) => {
   const [stats, setStats] = useState<Stats | undefined>();
 
   useEffect(() => {
@@ -34,63 +35,67 @@ const Entry = ({ path }: { path: string }) => {
   }, [path]);
 
   if (stats?.isDirectory()) {
-    return <Directory path={path} />;
+    return <Directory path={path} depth={depth} />;
   } else {
-    return <File path={path} />;
+    return <File path={path} depth={depth} />;
   }
 };
 
-const Directory = ({ path }: { path: string }) => {
+const Directory = ({ path, depth }: { path: string; depth: number }) => {
   const [paths, setPaths] = useState<string[]>([]);
-  const [isFolded, setFolded] = useState(true);
+  const [isOpen, setOpen] = useState(false);
+  const match = useMatch({ path: `/repositories${path}`, end: false });
 
   useEffect(() => {
-    if (isFolded) {
+    if (isOpen) {
       pfs
         .readdir(path)
         .then((relpaths) =>
           setPaths(relpaths.map((relpath) => `${path}/${relpath}`))
         );
     }
-  }, [path, isFolded]);
+  }, [path, isOpen]);
 
   return (
     <>
-      <NavList.Item onClick={() => setFolded((isFolded) => !isFolded)}>
-        <NavList.LeadingVisual>
+      <ActionList.Item
+        onClick={() => setOpen((isOpen) => !isOpen)}
+        active={!isOpen && match != null}
+        sx={{ paddingLeft: `${8 + 16 * depth}px` }}
+      >
+        <ActionList.LeadingVisual>
           <Icon.FileDirectoryIcon />
-        </NavList.LeadingVisual>
+        </ActionList.LeadingVisual>
         {basename(path)}
-        <NavList.SubNav>
-          {paths.map((path) => (
-            <Entry key={path} path={path} />
-          ))}
-        </NavList.SubNav>
-      </NavList.Item>
+        <ActionList.TrailingVisual>
+          {isOpen ? <Icon.ChevronUpIcon /> : <Icon.ChevronDownIcon />}
+        </ActionList.TrailingVisual>
+      </ActionList.Item>
+      <Box as="ul" sx={{ padding: 0, display: isOpen ? "block" : "none" }}>
+        {paths.map((path) => (
+          <Entry key={path} path={path} depth={depth + 1} />
+        ))}
+      </Box>
     </>
   );
 };
 
-const File = ({ path }: { path: string }) => (
-  <NavItem to={`/repositories${path}`}>
-    <NavList.LeadingVisual>
-      <Icon.FileIcon />
-    </NavList.LeadingVisual>
-    {basename(path)}
-  </NavItem>
-);
+const File = ({ path, depth }: { path: string; depth: number }) => {
+  const to = `/repositories${path}`;
+  const match = useMatch({ path: to, end: true });
 
-const NavItem = ({ to, children }: { to: To; children: ReactNode }) => {
-  const resolved = useResolvedPath(to);
-  const isCurrent = useMatch({ path: resolved.pathname, end: true });
   return (
-    <NavList.Item
+    <ActionList.LinkItem
       as={Link}
       to={to}
-      aria-current={isCurrent ? "page" : undefined}
+      active={match != null}
+      sx={{ paddingLeft: `${8 + 16 * depth}px` }}
     >
-      {children}
-    </NavList.Item>
+      <ActionList.LeadingVisual>
+        <Icon.FileIcon />
+      </ActionList.LeadingVisual>
+      {basename(path)}
+    </ActionList.LinkItem>
   );
 };
 
