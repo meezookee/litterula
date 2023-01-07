@@ -10,7 +10,7 @@ const ErrorPage = () => {
       {isRouteErrorResponse(error) ? (
         <p>{error.statusText}</p>
       ) : (
-        <pre>{JSON.stringify(error, null, 2)}</pre>
+        <pre style={{ whiteSpace: "pre-wrap" }}>{String(error)}</pre>
       )}
     </div>
   );

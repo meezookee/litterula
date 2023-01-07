@@ -29,6 +29,7 @@ type CustomElement =
   | EmphasisElement
   | StrongElement
   | DeleteElement
+  | ThematicBreakElement
   | UnknownElement;
 
 interface CustomText {
@@ -47,6 +48,7 @@ type BlockOrDefinitionContent =
   | HeadingElement
   | BlockquoteElement
   | ListElement
+  | ThematicBreakElement
   | UnknownElement;
 
 interface ParagraphElement {
@@ -98,6 +100,11 @@ interface DeleteElement {
   children: PhrasingContent[];
 }
 
+interface ThematicBreakElement {
+  type: "thematicBreak";
+  children: [{ text: "" }];
+}
+
 interface UnknownElement {
   type: "unknown";
   originalType: string;
@@ -121,6 +128,9 @@ function convertContent(content: AST.Content, source: string): Descendant {
 
     case "list":
       return convertList(content, source);
+
+    case "thematicBreak":
+      return convertThematicBreak(content);
 
     default:
       return unknownContent(content.type, source, content.position);
@@ -227,6 +237,9 @@ function convertBlockOrDefinitionContent(
     case "list":
       return convertList(content, source);
 
+    case "thematicBreak":
+      return convertThematicBreak(content);
+
     default:
       return unknownContent(content.type, source, content.position);
   }
@@ -266,6 +279,12 @@ function convertDelete(content: AST.Delete, source: string): DeleteElement {
   };
 }
 
+function convertThematicBreak(
+  content: AST.ThematicBreak
+): ThematicBreakElement {
+  return { type: "thematicBreak", children: [{ text: "" }] };
+}
+
 function unknownContent(
   originalType: string,
   source: string,
@@ -285,13 +304,15 @@ const Editor = ({ initialValue }: { initialValue: string }) => {
   const renderElement = (props: RenderElementProps) => <Element {...props} />;
   const renderLeaf = (props: RenderLeafProps) => <Leaf {...props} />;
 
-  const { isInline } = editor;
+  const { isInline, isVoid } = editor;
   editor.isInline = (element) =>
     element.type === "emphasis" ||
     element.type === "strong" ||
     element.type === "delete" ||
     element.type === "unknown" ||
     isInline(element);
+  editor.isVoid = (element) =>
+    element.type === "thematicBreak" || isVoid(element);
 
   return (
     <Slate editor={editor} value={document}>
@@ -346,6 +367,14 @@ const Element = (props: RenderElementProps) => {
 
     case "delete":
       return <del {...props.attributes}>{props.children}</del>;
+
+    case "thematicBreak":
+      return (
+        <div {...props.attributes}>
+          {props.children}
+          <hr />
+        </div>
+      );
 
     case "unknown":
       return (
