@@ -28,7 +28,7 @@ const Explorer = ({ path }: { path: string }) => {
   const [paths, setPaths] = useState<string[]>([]);
 
   useEffect(() => {
-    pfs
+    void pfs
       .readdir(`/${path}`)
       .then((relpaths) =>
         setPaths(relpaths.map((relpath) => `/${path}/${relpath}`))
@@ -48,7 +48,7 @@ const Entry = ({ path, depth }: { path: string; depth: number }) => {
   const [stats, setStats] = useState<Stats | undefined>();
 
   useEffect(() => {
-    pfs.lstat(path).then(setStats);
+    void pfs.lstat(path).then(setStats);
   }, [path]);
 
   if (stats?.isDirectory()) {
@@ -65,7 +65,7 @@ const Directory = ({ path, depth }: { path: string; depth: number }) => {
 
   useEffect(() => {
     if (isOpen) {
-      pfs
+      void pfs
         .readdir(path)
         .then((relpaths) =>
           setPaths(relpaths.map((relpath) => `${path}/${relpath}`))

@@ -11,7 +11,7 @@ const Editor = () => {
   assertNonNullable(path);
 
   useEffect(() => {
-    pfs
+    void pfs
       .readFile(`/${repositoryName}/${path}`, { encoding: "utf8" })
       .then((data) => {
         assert(typeof data === "string");
