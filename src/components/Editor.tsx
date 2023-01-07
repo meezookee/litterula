@@ -1,5 +1,6 @@
-import { Lexer } from "marked";
-import { useCallback, useEffect, useState } from "react";
+import { fromMarkdown } from "mdast-util-from-markdown";
+import { useState } from "react";
+import type * as AST from "mdast";
 import { BaseEditor, createEditor, Descendant } from "slate";
 import {
   Slate,
@@ -7,16 +8,8 @@ import {
   withReact,
   ReactEditor,
   RenderElementProps,
+  RenderLeafProps,
 } from "slate-react";
-
-type CustomElement = HeadingElement | ParagraphElement;
-type HeadingElement = {
-  type: "heading";
-  level: number;
-  children: CustomText[];
-};
-type ParagraphElement = { type: "paragraph"; children: CustomText[] };
-type CustomText = { text: string };
 
 declare module "slate" {
   interface CustomTypes {
@@ -26,85 +19,109 @@ declare module "slate" {
   }
 }
 
-const Heading = (props: RenderElementProps & { level: number }) => {
-  const E = `h${props.level}`;
-  return <E {...props.attributes}>{props.children}</E>;
-};
+type CustomElement = ParagraphElement | UnknownElement;
 
-const Paragraph = (props: RenderElementProps) => (
-  <p {...props.attributes}>{props.children}</p>
-);
+interface CustomText {
+  text: string;
+}
+
+type PhrasingContent = CustomText | UnknownElement;
+
+interface ParagraphElement {
+  type: "paragraph";
+  children: PhrasingContent[];
+}
+
+interface UnknownElement {
+  type: "unknown";
+  text: string;
+}
+
+function convertRoot(root: AST.Root, source: string): Descendant[] {
+  return root.children.map((child) => convertContent(child, source));
+}
+
+function convertContent(content: AST.Content, source: string): Descendant {
+  switch (content.type) {
+    case "paragraph":
+      return convertParagraph(content, source);
+    default:
+      return {
+        type: "unknown",
+        text: source.slice(
+          content.position?.start.offset,
+          content.position?.end.offset
+        ),
+      };
+  }
+}
+
+function convertParagraph(
+  paragraph: AST.Paragraph,
+  source: string
+): ParagraphElement {
+  return {
+    type: "paragraph",
+    children: paragraph.children.map((child) =>
+      convertPhrasingContent(child, source)
+    ),
+  };
+}
+
+function convertPhrasingContent(
+  content: AST.PhrasingContent,
+  source: string
+): PhrasingContent {
+  switch (content.type) {
+    case "text":
+      return convertText(content);
+    default:
+      return {
+        type: "unknown",
+        text: source.slice(
+          content.position?.start.offset,
+          content.position?.end.offset
+        ),
+      };
+  }
+}
+
+function convertText(content: AST.Text): CustomText {
+  return { text: content.value };
+}
 
 const Editor = ({ initialValue }: { initialValue: string }) => {
   const [editor] = useState(() => withReact(createEditor()));
-  const [document, setDocument] = useState<Descendant[]>([]);
+  const ast = fromMarkdown(initialValue);
+  const document = convertRoot(ast, initialValue);
+  const renderElement = (props: RenderElementProps) => <Element {...props} />;
+  const renderLeaf = (props: RenderLeafProps) => <Leaf {...props} />;
 
-  useEffect(() => {
-    const lexer = new Lexer();
-    const tokens = lexer.lex(initialValue);
-    console.log(tokens);
-    setDocument(parse(tokens));
-  }, [initialValue]);
-
-  const renderElement = useCallback((props: RenderElementProps) => {
-    switch (props.element.type) {
-      case "heading":
-        return <Heading level={props.element.level} {...props} />;
-      case "paragraph":
-        return <Paragraph {...props} />;
-    }
-  }, []);
-
-  return document.length ? (
+  return (
     <Slate editor={editor} value={document}>
-      <Editable renderElement={renderElement} />
+      <Editable renderElement={renderElement} renderLeaf={renderLeaf} />
     </Slate>
-  ) : null;
+  );
 };
 
-type Token = ReturnType<Lexer["lex"]>[0];
-const parse = (tokens: Token[]): Descendant[] => {
-  const result: Descendant[] = [];
-  for (const token of tokens) {
-    switch (token.type) {
-      case "heading":
-        result.push(parseHeading(token));
-        break;
-      case "paragraph":
-        result.push(parseParagraph(token));
-        break;
-    }
+const Element = (props: RenderElementProps) => {
+  switch (props.element.type) {
+    case "paragraph":
+      return <p {...props.attributes}>{props.children}</p>;
+    case "unknown":
+      return <code {...props.attributes}>{props.children}</code>;
   }
-  return result;
 };
 
-const parseParagraph = (
-  token: Token & { type: "paragraph" }
-): ParagraphElement => ({
-  type: "paragraph",
-  children: token.tokens
-    .map((token) => {
-      if (token.type !== "text") {
-        console.warn("unexpected token type", token.type, "in paragraph");
-        return null;
-      }
-      return { text: token.text };
-    })
-    .filter((x): x is NonNullable<typeof x> => !!x),
-});
-
-const parseHeading = (token: Token & { type: "heading" }): HeadingElement => ({
-  type: "heading",
-  level: token.depth,
-  children: token.tokens
-    .map((token) => {
-      if (token.type !== "text") {
-        console.warn("unexpected token type", token.type, "in heading");
-        return null;
-      }
-      return { text: token.text };
-    })
-    .filter((x): x is NonNullable<typeof x> => !!x),
-});
+const Leaf = (props: RenderLeafProps) => {
+  if ("type" in props.leaf && props.leaf.type === "unknown") {
+    return (
+      <code className="unknown" {...props.attributes}>
+        {props.children}
+      </code>
+    );
+  }
+  return <span {...props.attributes}>{props.children}</span>;
+};
 
 export default Editor;
