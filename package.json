@@ -15,6 +15,7 @@
     "@types/react": "^18.0.25",
     "@types/react-dom": "^18.0.9",
     "@types/react-router-bootstrap": "^0.24.5",
+    "@types/unist": "^2.0.6",
     "@typescript-eslint/eslint-plugin": "^5.45.1",
     "@typescript-eslint/parser": "^5.45.1",
     "bootstrap": "^5.2.3",

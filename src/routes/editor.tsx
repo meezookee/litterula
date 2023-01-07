@@ -1,23 +1,23 @@
-import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { LoaderFunction, useLoaderData } from "react-router-dom";
 import { pfs } from "../fs";
 import { assert, assertNonNullable } from "../util";
 import EditorComponent from "../components/Editor";
 
-const Editor = () => {
-  const [data, setData] = useState<string>();
-  const { repositoryName, "*": path } = useParams();
+export const loader: LoaderFunction = async ({
+  params: { repositoryName, "*": path },
+}) => {
   assertNonNullable(repositoryName);
   assertNonNullable(path);
+  const data = await pfs.readFile(`/${repositoryName}/${path}`, {
+    encoding: "utf8",
+  });
+  assert(typeof data === "string");
+  return data;
+};
 
-  useEffect(() => {
-    void pfs
-      .readFile(`/${repositoryName}/${path}`, { encoding: "utf8" })
-      .then((data) => {
-        assert(typeof data === "string");
-        setData(data);
-      });
-  }, [path, repositoryName]);
+const Editor = () => {
+  const data = useLoaderData();
+  assert(typeof data === "string");
 
   return data ? <EditorComponent initialValue={data} /> : null;
 };
