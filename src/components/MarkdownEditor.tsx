@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { BaseEditor, createEditor, Descendant, Editor } from "slate";
 import {
   Slate,
@@ -30,13 +30,32 @@ function withMarkdown(editor: Editor): Editor {
   return editor;
 }
 
-const MarkdownEditor = ({ initialValue }: { initialValue: Descendant[] }) => {
+const MarkdownEditor = ({
+  initialValue,
+  onChange,
+}: {
+  initialValue: Descendant[];
+  onChange(value: Descendant[]): void;
+}) => {
   const [editor] = useState(() => withReact(withMarkdown(createEditor())));
   const renderElement = (props: RenderElementProps) => <Element {...props} />;
   const renderLeaf = (props: RenderLeafProps) => <Leaf {...props} />;
 
+  const handleChange = useCallback(
+    (value: Descendant[]): void => {
+      if (
+        editor.operations.some(
+          (operation) => operation.type !== "set_selection"
+        )
+      ) {
+        onChange(value);
+      }
+    },
+    [editor.operations, onChange]
+  );
+
   return (
-    <Slate editor={editor} value={initialValue}>
+    <Slate editor={editor} value={initialValue} onChange={handleChange}>
       <Editable renderElement={renderElement} renderLeaf={renderLeaf} />
     </Slate>
   );

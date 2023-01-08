@@ -27,6 +27,8 @@ Hello, world! *Italic*, **Bold**!
 > Nvm it sucked
 >
 > Again, it sucked
+
+Bye!
 `;
     await pfs.writeFile("/Untitled/Untitled.md", data);
     return redirect("/repositories/Untitled/Untitled.md");
