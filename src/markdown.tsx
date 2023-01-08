@@ -1,55 +1,142 @@
 import type * as AST from "mdast";
-import type * as Unist from "unist";
 import { fromMarkdown } from "mdast-util-from-markdown";
 import { toMarkdown } from "mdast-util-to-markdown";
+
+export type Text = Modified<AST.Text>;
+export type Content = Modified<AST.Content>;
 
 type Rename<T, K1 extends keyof T, K2 extends string> = Omit<T, K1> & {
   [key in K2]: T[K1];
 };
-
 type ReplaceType<T, K extends keyof T, V> = Omit<T, K> & { [key in K]: V };
 
+type ModifiedLiteral<T extends AST.Literal> = Rename<T, "value", "text">;
+type ModifiedParent<T extends AST.Parent> = ReplaceType<
+  T,
+  "children",
+  Modified<T["children"][0]>[]
+>;
+type ModifiedVoid<T> = T & {
+  isVoid: true;
+  children: [{ text: "" }];
+};
 type Modified<T> = T extends AST.Literal
-  ? Rename<T, "value", "text">
+  ? ModifiedLiteral<T>
   : T extends AST.Parent
-  ? ReplaceType<T, "children", Modified<T["children"][0]>[]>
-  : T extends Unist.Node
-  ? T & { children: [{ text: "" }] }
-  : never;
+  ? ModifiedParent<T>
+  : ModifiedVoid<T>;
 
-export type Text = Modified<AST.Text>;
-
-export type Content = Modified<AST.Content>;
+type PhrasingContent = Extract<AST.Content, AST.PhrasingContent>;
+type BlockOrDefinitionContent = Extract<
+  AST.Content,
+  AST.BlockContent | AST.DefinitionContent
+>;
+type ListContent = Extract<AST.Content, AST.ListContent>;
+type TableContent = Extract<AST.Content, AST.TableContent>;
+type RowContent = Extract<AST.Content, AST.RowContent>;
+type StaticPhrasingContent = Extract<AST.Content, AST.StaticPhrasingContent>;
 
 export const parse = (source: string) => fromRoot(fromMarkdown(source), source);
 
-const fromRoot = (root: AST.Root, source: string): Modified<AST.Root> => ({
+const fromRoot = (root: AST.Root, source: string) => ({
   type: "root",
   children: root.children.map((child) => fromContent(child, source)),
 });
 
-// FIXME: Type it right. I believe implementation is correct.
-const fromContent = <T extends AST.Content>(
-  content: T,
+function fromContent(
+  content: StaticPhrasingContent,
   source: string
-): Modified<T> => {
-  if ("value" in content) {
-    const { value: text, ...rest } = content;
-    return { ...rest, text } as Modified<T>;
-  }
+): Modified<StaticPhrasingContent>;
+function fromContent(
+  content: PhrasingContent,
+  source: string
+): Modified<PhrasingContent>;
+function fromContent(
+  content: BlockOrDefinitionContent,
+  source: string
+): Modified<BlockOrDefinitionContent>;
+function fromContent(
+  content: ListContent,
+  source: string
+): Modified<ListContent>;
+function fromContent(
+  content: TableContent,
+  source: string
+): Modified<TableContent>;
+function fromContent(content: RowContent, source: string): Modified<RowContent>;
+function fromContent(
+  content: AST.Content,
+  source: string
+): Modified<AST.Content>;
+function fromContent(
+  content: AST.Content,
+  source: string
+): Modified<AST.Content> {
+  switch (content.type) {
+    case "html":
+    case "code":
+    case "yaml":
+    case "text":
+    case "inlineCode": {
+      const { value: text, ...rest } = content;
+      const literal = { ...rest, text };
+      return literal;
+    }
 
-  if ("children" in content) {
-    return {
-      ...content,
-      children: content.children.map((child) => fromContent(child, source)),
-    } as Modified<T>;
-  }
+    case "paragraph":
+    case "heading":
+    case "tableCell":
+    case "emphasis":
+    case "strong":
+    case "delete":
+    case "footnote":
+      return {
+        ...content,
+        children: content.children.map((child) => fromContent(child, source)),
+      };
 
-  return {
-    ...content,
-    children: [{ text: "" }],
-  } as Modified<T>;
-};
+    case "blockquote":
+    case "listItem":
+    case "footnoteDefinition":
+      return {
+        ...content,
+        children: content.children.map((child) => fromContent(child, source)),
+      };
+
+    case "list":
+      return {
+        ...content,
+        children: content.children.map((child) => fromContent(child, source)),
+      };
+
+    case "table":
+      return {
+        ...content,
+        children: content.children.map((child) => fromContent(child, source)),
+      };
+
+    case "tableRow":
+      return {
+        ...content,
+        children: content.children.map((child) => fromContent(child, source)),
+      };
+
+    case "link":
+    case "linkReference":
+      return {
+        ...content,
+        children: content.children.map((child) => fromContent(child, source)),
+      };
+
+    case "definition":
+    case "break":
+    case "image":
+    case "thematicBreak":
+    case "imageReference":
+    case "footnoteReference":
+      return { ...content, isVoid: true, children: [{ text: "" }] };
+  }
+}
 
 export const serialize = (ast: Modified<AST.Root>): string =>
   toMarkdown(intoRoot(ast));
@@ -59,20 +146,82 @@ const intoRoot = (ast: Modified<AST.Root>): AST.Root => ({
   children: ast.children.map(intoContent),
 });
 
-const intoContent = <T extends AST.Content>(content: Modified<T>): T => {
-  if ("text" in content) {
-    const { text: value, ...rest } = content;
-    return { ...rest, value } as unknown as T;
-  }
+function intoContent(
+  content: Modified<StaticPhrasingContent>
+): StaticPhrasingContent;
+function intoContent(content: Modified<PhrasingContent>): PhrasingContent;
+function intoContent(
+  content: Modified<BlockOrDefinitionContent>
+): BlockOrDefinitionContent;
+function intoContent(content: Modified<ListContent>): ListContent;
+function intoContent(content: Modified<TableContent>): TableContent;
+function intoContent(content: Modified<RowContent>): RowContent;
+function intoContent(content: Modified<AST.Content>): AST.Content;
+function intoContent(content: Modified<AST.Content>): AST.Content {
+  switch (content.type) {
+    case "html":
+    case "code":
+    case "yaml":
+    case "text":
+    case "inlineCode": {
+      const { text: value, ...rest } = content;
+      const literal = { ...rest, value };
+      return literal;
+    }
 
-  if ("children" in content) {
-    return {
-      ...content,
-      children: content.children.map(
-        intoContent as (content: unknown) => unknown
-      ),
-    } as T;
-  }
+    case "paragraph":
+    case "heading":
+    case "tableCell":
+    case "emphasis":
+    case "strong":
+    case "delete":
+    case "footnote":
+      return {
+        ...content,
+        children: content.children.map((child) => intoContent(child)),
+      };
 
-  return content as T;
-};
+    case "blockquote":
+    case "listItem":
+    case "footnoteDefinition":
+      return {
+        ...content,
+        children: content.children.map((child) => intoContent(child)),
+      };
+
+    case "list":
+      return {
+        ...content,
+        children: content.children.map((child) => intoContent(child)),
+      };
+
+    case "table":
+      return {
+        ...content,
+        children: content.children.map((child) => intoContent(child)),
+      };
+
+    case "tableRow":
+      return {
+        ...content,
+        children: content.children.map((child) => intoContent(child)),
+      };
+
+    case "link":
+    case "linkReference":
+      return {
+        ...content,
+        children: content.children.map((child) => intoContent(child)),
+      };
+
+    case "definition":
+    case "break":
+    case "image":
+    case "thematicBreak":
+    case "imageReference":
+    case "footnoteReference": {
+      const { isVoid, children, ...rest } = content;
+      return rest;
+    }
+  }
+}

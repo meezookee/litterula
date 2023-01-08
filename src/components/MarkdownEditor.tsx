@@ -25,8 +25,7 @@ function withMarkdown(editor: Editor): Editor {
     element.type === "strong" ||
     element.type === "delete" ||
     isInline(element);
-  editor.isVoid = (element) =>
-    element.type === "thematicBreak" || isVoid(element);
+  editor.isVoid = (element) => "isVoid" in element || isVoid(element);
   return editor;
 }
 
