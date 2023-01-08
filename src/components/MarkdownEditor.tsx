@@ -8,7 +8,7 @@ import {
   RenderElementProps,
   RenderLeafProps,
 } from "slate-react";
-import { Element as CustomElement, Text as CustomText } from "../markdown";
+import { Content as CustomElement, Text as CustomText } from "../markdown";
 
 declare module "slate" {
   interface CustomTypes {
@@ -24,7 +24,6 @@ function withMarkdown(editor: Editor): Editor {
     element.type === "emphasis" ||
     element.type === "strong" ||
     element.type === "delete" ||
-    element.type === "unknown" ||
     isInline(element);
   editor.isVoid = (element) =>
     element.type === "thematicBreak" || isVoid(element);
@@ -122,25 +121,10 @@ const Element = (props: RenderElementProps) => {
     case "imageReference":
     case "footnoteReference":
       throw new Error('Not implemented yet: "footnoteReference" case');
-
-    case "unknown":
-      return (
-        <code className="unknown" {...props.attributes}>
-          {props.element.originalType} {props.children}
-        </code>
-      );
   }
 };
 
 const Leaf = (props: RenderLeafProps) => {
-  if ("type" in props.text && props.text.type === "unknown") {
-    return (
-      <code className="unknown" {...props.attributes}>
-        [{"originalType" in props.text && props.text.originalType}]
-        {props.children}
-      </code>
-    );
-  }
   return <span {...props.attributes}>{props.children}</span>;
 };
 
