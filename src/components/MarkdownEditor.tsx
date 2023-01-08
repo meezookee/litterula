@@ -61,7 +61,7 @@ const Element = (props: RenderElementProps) => {
         return (
           <ol
             className={props.element.spread ? "spread" : ""}
-            start={props.element.start}
+            start={props.element.start ?? undefined}
             {...props.attributes}
           >
             {props.children}
@@ -78,8 +78,23 @@ const Element = (props: RenderElementProps) => {
         );
       }
 
+    case "table":
+    case "html":
+    case "code":
+    case "yaml":
+    case "definition":
+    case "footnoteDefinition":
+      throw new Error('Not implemented yet: "footnoteReference" case');
+
     case "listItem":
       return <li {...props.attributes}>{props.children}</li>;
+
+    case "tableRow":
+    case "tableCell":
+    case "link":
+    case "linkReference":
+    case "text":
+      throw new Error('Not implemented yet: "footnoteReference" case');
 
     case "emphasis":
       return <em {...props.attributes}>{props.children}</em>;
@@ -90,6 +105,12 @@ const Element = (props: RenderElementProps) => {
     case "delete":
       return <del {...props.attributes}>{props.children}</del>;
 
+    case "break":
+    case "image":
+    case "footnote":
+    case "inlineCode":
+      throw new Error('Not implemented yet: "footnoteReference" case');
+
     case "thematicBreak":
       return (
         <div {...props.attributes}>
@@ -97,6 +118,10 @@ const Element = (props: RenderElementProps) => {
           <hr />
         </div>
       );
+
+    case "imageReference":
+    case "footnoteReference":
+      throw new Error('Not implemented yet: "footnoteReference" case');
 
     case "unknown":
       return (

@@ -2,7 +2,7 @@ import { LoaderFunction, useLoaderData } from "react-router-dom";
 import { pfs } from "../fs";
 import { assert, assertNonNullable } from "../util";
 import MarkdownEditor from "../components/MarkdownEditor";
-import { parse, Node } from "../markdown";
+import { Element, parse } from "../markdown";
 
 export const loader: LoaderFunction = async ({
   params: { repositoryName, "*": path },
@@ -13,12 +13,13 @@ export const loader: LoaderFunction = async ({
     encoding: "utf8",
   });
   assert(typeof data === "string");
-  const document = parse(data);
-  return document;
+  const root = parse(data);
+  assert(root.type !== "unknown");
+  return root.children;
 };
 
 const Editor = () => {
-  const data = useLoaderData() as Node[];
+  const data = useLoaderData() as Element[];
 
   return <MarkdownEditor initialValue={data} />;
 };

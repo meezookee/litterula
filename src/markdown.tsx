@@ -1,104 +1,42 @@
 import type * as AST from "mdast";
-import type { Position } from "unist";
+import type * as Unist from "unist";
 import { fromMarkdown } from "mdast-util-from-markdown";
 
-export type Element =
-  | Paragraph
-  | Heading
-  | Blockquote
-  | List
-  | ListItem
-  | Emphasis
-  | Strong
-  | Delete
-  | ThematicBreak
+type Rename<T, K1 extends keyof T, K2 extends string> = Omit<T, K1> & {
+  [key in K2]: T[K1];
+};
+
+type ReplaceType<T, K extends keyof T, V> = Omit<T, K> & { [key in K]: V };
+
+type Modified<T> =
+  | (T extends AST.Literal
+      ? Rename<T, "value", "text">
+      : T extends AST.Parent
+      ? ReplaceType<T, "children", Modified<T["children"][0]>[]>
+      : T)
   | Unknown;
 
-export type Node = Element | Text;
+export type Text = Modified<AST.Text>;
 
-type PhrasingContent = Text | Emphasis | Strong | Delete | Unknown;
+type Converter<T> = (content: T, source: string) => Modified<T> | Unknown;
 
-type BlockOrDefinitionContent =
-  | Paragraph
-  | Heading
-  | Blockquote
-  | List
-  | ThematicBreak
-  | Unknown;
+export type Element = Modified<AST.Content>;
 
-export interface Text {
-  text: string;
-}
-
-export interface Paragraph {
-  type: "paragraph";
-  children: PhrasingContent[];
-}
-
-export interface Heading {
-  type: "heading";
-  depth: 1 | 2 | 3 | 4 | 5 | 6;
-  children: PhrasingContent[];
-}
-
-export interface Blockquote {
-  type: "blockquote";
-  children: BlockOrDefinitionContent[];
-}
-
-export type List = {
-  type: "list";
-  spread: boolean;
-  children: ListItem[];
-} & (
-  | { ordered: true; start: number }
-  | {
-      ordered: false;
-    }
-);
-
-export interface ListItem {
-  type: "listItem";
-  checked?: boolean | null | undefined;
-  spread?: boolean | null | undefined;
-  children: BlockOrDefinitionContent[];
-}
-
-export interface Emphasis {
-  type: "emphasis";
-  children: PhrasingContent[];
-}
-
-export interface Strong {
-  type: "strong";
-  children: PhrasingContent[];
-}
-
-export interface Delete {
-  type: "delete";
-  children: PhrasingContent[];
-}
-
-export interface ThematicBreak {
-  type: "thematicBreak";
-  children: [{ text: "" }];
-}
-
-export interface Unknown {
+interface Unknown {
   type: "unknown";
   originalType: string;
   text: string;
 }
 
-export function parse(source: string): Node[] {
-  return convertRoot(fromMarkdown(source), source);
-}
+export const parse = (source: string) =>
+  convertRoot(fromMarkdown(source), source);
 
-function convertRoot(root: AST.Root, source: string): Node[] {
-  return root.children.map((child) => convertContent(child, source));
-}
+const convertRoot: Converter<AST.Root> = (root, source) => ({
+  type: "root",
+  children: root.children.map((child) => convertContent(child, source)),
+});
 
-function convertContent(content: AST.Content, source: string): Node {
+const convertContent: Converter<AST.Content> = (content, source) => {
   switch (content.type) {
     case "paragraph":
       return convertParagraph(content, source);
@@ -113,45 +51,36 @@ function convertContent(content: AST.Content, source: string): Node {
       return convertList(content, source);
 
     case "thematicBreak":
-      return convertThematicBreak(content);
+      return convertThematicBreak(content, source);
 
     default:
       return unknownContent(content.type, source, content.position);
   }
-}
+};
 
-function convertParagraph(paragraph: AST.Paragraph, source: string): Paragraph {
-  return {
-    type: "paragraph",
-    children: paragraph.children.map((child) =>
-      convertPhrasingContent(child, source)
-    ),
-  };
-}
+const convertParagraph: Converter<AST.Paragraph> = (paragraph, source) => ({
+  type: "paragraph",
+  children: paragraph.children.map((child) =>
+    convertPhrasingContent(child, source)
+  ),
+});
 
-function convertHeading(heading: AST.Heading, source: string): Heading {
-  return {
-    type: "heading",
-    depth: heading.depth,
-    children: heading.children.map((child) =>
-      convertPhrasingContent(child, source)
-    ),
-  };
-}
+const convertHeading: Converter<AST.Heading> = (heading, source) => ({
+  type: "heading",
+  depth: heading.depth,
+  children: heading.children.map((child) =>
+    convertPhrasingContent(child, source)
+  ),
+});
 
-function convertBlockquote(
-  blockquote: AST.Blockquote,
-  source: string
-): Blockquote {
-  return {
-    type: "blockquote",
-    children: blockquote.children.map((child) =>
-      convertBlockOrDefinitionContent(child, source)
-    ),
-  };
-}
+const convertBlockquote: Converter<AST.Blockquote> = (blockquote, source) => ({
+  type: "blockquote",
+  children: blockquote.children.map((child) =>
+    convertBlockOrDefinitionContent(child, source)
+  ),
+});
 
-function convertList(content: AST.List, source: string): List {
+const convertList: Converter<AST.List> = (content, source) => {
   const children = content.children.map((item) => ({
     type: "listItem" as const,
     checked: !!item.checked,
@@ -176,15 +105,15 @@ function convertList(content: AST.List, source: string): List {
       children,
     };
   }
-}
+};
 
-function convertPhrasingContent(
-  content: AST.PhrasingContent,
-  source: string
-): PhrasingContent {
+const convertPhrasingContent: Converter<AST.PhrasingContent> = (
+  content,
+  source
+) => {
   switch (content.type) {
     case "text":
-      return convertText(content);
+      return convertText(content, source);
 
     case "emphasis":
       return convertEmphasis(content, source);
@@ -198,12 +127,11 @@ function convertPhrasingContent(
     default:
       return unknownContent(content.type, source, content.position);
   }
-}
+};
 
-function convertBlockOrDefinitionContent(
-  content: AST.BlockContent | AST.DefinitionContent,
-  source: string
-): BlockOrDefinitionContent {
+const convertBlockOrDefinitionContent: Converter<
+  AST.BlockContent | AST.DefinitionContent
+> = (content, source) => {
   switch (content.type) {
     case "paragraph":
       return convertParagraph(content, source);
@@ -218,56 +146,50 @@ function convertBlockOrDefinitionContent(
       return convertList(content, source);
 
     case "thematicBreak":
-      return convertThematicBreak(content);
+      return convertThematicBreak(content, source);
 
     default:
       return unknownContent(content.type, source, content.position);
   }
-}
+};
 
-function convertText(content: AST.Text): Text {
-  return { text: content.value };
-}
+const convertText: Converter<AST.Text> = (content): Text => ({
+  type: "text",
+  text: content.value,
+});
 
-function convertEmphasis(content: AST.Emphasis, source: string): Emphasis {
-  return {
-    type: "emphasis",
-    children: content.children.map((child) =>
-      convertPhrasingContent(child, source)
-    ),
-  };
-}
+const convertEmphasis: Converter<AST.Emphasis> = (content, source) => ({
+  type: "emphasis",
+  children: content.children.map((child) =>
+    convertPhrasingContent(child, source)
+  ),
+});
 
-function convertStrong(content: AST.Strong, source: string): Strong {
-  return {
-    type: "strong",
-    children: content.children.map((child) =>
-      convertPhrasingContent(child, source)
-    ),
-  };
-}
+const convertStrong: Converter<AST.Strong> = (content, source) => ({
+  type: "strong",
+  children: content.children.map((child) =>
+    convertPhrasingContent(child, source)
+  ),
+});
 
-function convertDelete(content: AST.Delete, source: string): Delete {
-  return {
-    type: "delete",
-    children: content.children.map((child) =>
-      convertPhrasingContent(child, source)
-    ),
-  };
-}
+const convertDelete: Converter<AST.Delete> = (content, source) => ({
+  type: "delete",
+  children: content.children.map((child) =>
+    convertPhrasingContent(child, source)
+  ),
+});
 
-function convertThematicBreak(content: AST.ThematicBreak): ThematicBreak {
-  return { type: "thematicBreak", children: [{ text: "" }] };
-}
+const convertThematicBreak: Converter<AST.ThematicBreak> = () => ({
+  type: "thematicBreak",
+  children: [{ text: "" }],
+});
 
-function unknownContent(
+const unknownContent = (
   originalType: string,
   source: string,
-  position?: Position
-): Unknown {
-  return {
-    type: "unknown",
-    originalType,
-    text: source.slice(position?.start.offset, position?.end.offset),
-  };
-}
+  position?: Unist.Position
+): Unknown => ({
+  type: "unknown",
+  originalType,
+  text: source.slice(position?.start.offset, position?.end.offset),
+});
