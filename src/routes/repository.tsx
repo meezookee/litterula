@@ -1,5 +1,6 @@
-import { Link, Outlet, useMatch, useParams } from "react-router-dom";
-import { ActionList, Box, PageLayout } from "@primer/react";
+import { Outlet, useMatch, useNavigate, useParams } from "react-router-dom";
+import { PageLayout } from "@primer/react";
+import { TreeView } from "@primer/react/drafts";
 import { useEffect, useState } from "react";
 import { Stats } from "@isomorphic-git/lightning-fs";
 import { basename } from "@isomorphic-git/lightning-fs/src/path";
@@ -36,15 +37,15 @@ const Explorer = ({ path }: { path: string }) => {
   }, [path]);
 
   return (
-    <ActionList>
+    <TreeView>
       {paths.map((path) => (
-        <Entry key={path} path={path} depth={0} />
+        <Entry key={path} path={path} />
       ))}
-    </ActionList>
+    </TreeView>
   );
 };
 
-const Entry = ({ path, depth }: { path: string; depth: number }) => {
+const Entry = ({ path }: { path: string }) => {
   const [stats, setStats] = useState<Stats | undefined>();
 
   useEffect(() => {
@@ -52,67 +53,63 @@ const Entry = ({ path, depth }: { path: string; depth: number }) => {
   }, [path]);
 
   if (stats?.isDirectory()) {
-    return <Directory path={path} depth={depth} />;
+    return <Directory path={path} />;
   } else {
-    return <File path={path} depth={depth} />;
+    return <File path={path} />;
   }
 };
 
-const Directory = ({ path, depth }: { path: string; depth: number }) => {
+const Directory = ({ path }: { path: string }) => {
   const [paths, setPaths] = useState<string[]>([]);
-  const [isOpen, setOpen] = useState(false);
-  const match = useMatch({ path: `/repositories${path}`, end: false });
+  const [isExpanded, setExpanded] = useState(false);
 
   useEffect(() => {
-    if (isOpen) {
+    if (isExpanded) {
       void pfs
         .readdir(path)
         .then((relpaths) =>
           setPaths(relpaths.map((relpath) => `${path}/${relpath}`))
         );
+    } else {
+      setPaths([]);
     }
-  }, [path, isOpen]);
+  }, [path, isExpanded]);
 
   return (
-    <>
-      <ActionList.Item
-        onClick={() => setOpen((isOpen) => !isOpen)}
-        active={!isOpen && match != null}
-        sx={{ paddingLeft: `${8 + 16 * depth}px` }}
-      >
-        <ActionList.LeadingVisual>
-          <Icon.FileDirectoryIcon />
-        </ActionList.LeadingVisual>
-        {basename(path)}
-        <ActionList.TrailingVisual>
-          {isOpen ? <Icon.ChevronUpIcon /> : <Icon.ChevronDownIcon />}
-        </ActionList.TrailingVisual>
-      </ActionList.Item>
-      <Box as="ul" sx={{ padding: 0, display: isOpen ? "block" : "none" }}>
+    <TreeView.Item id={path} onExpandedChange={setExpanded}>
+      <TreeView.LeadingVisual>
+        {isExpanded ? (
+          <Icon.FileDirectoryOpenFillIcon />
+        ) : (
+          <Icon.FileDirectoryFillIcon />
+        )}
+      </TreeView.LeadingVisual>
+      {basename(path)}
+      <TreeView.SubTree>
         {paths.map((path) => (
-          <Entry key={path} path={path} depth={depth + 1} />
+          <Entry key={path} path={path} />
         ))}
-      </Box>
-    </>
+      </TreeView.SubTree>
+    </TreeView.Item>
   );
 };
 
-const File = ({ path, depth }: { path: string; depth: number }) => {
+const File = ({ path }: { path: string }) => {
   const to = `/repositories${path}`;
   const match = useMatch({ path: to, end: true });
+  const navigate = useNavigate();
 
   return (
-    <ActionList.LinkItem
-      as={Link}
-      to={to}
-      active={match != null}
-      sx={{ paddingLeft: `${8 + 16 * depth}px` }}
+    <TreeView.Item
+      id={path}
+      current={match != null}
+      onSelect={() => navigate(to)}
     >
-      <ActionList.LeadingVisual>
+      <TreeView.LeadingVisual>
         <Icon.FileIcon />
-      </ActionList.LeadingVisual>
+      </TreeView.LeadingVisual>
       {basename(path)}
-    </ActionList.LinkItem>
+    </TreeView.Item>
   );
 };
 
