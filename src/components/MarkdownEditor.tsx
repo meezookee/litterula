@@ -8,7 +8,7 @@ import {
   RenderElementProps,
   RenderLeafProps,
 } from "slate-react";
-import { Content as CustomElement, Text as CustomText } from "../markdown";
+import { Content, Text as CustomText } from "../markdown";
 
 declare module "slate" {
   interface CustomTypes {
@@ -17,6 +17,8 @@ declare module "slate" {
     Text: CustomText;
   }
 }
+
+type CustomElement = Exclude<Content, CustomText>;
 
 function withMarkdown(editor: Editor): Editor {
   const { isInline, isVoid } = editor;
@@ -95,22 +97,36 @@ const Element = (props: RenderElementProps) => {
         );
       }
 
-    case "table":
-    case "html":
-    case "code":
-    case "yaml":
-    case "definition":
-    case "footnoteDefinition":
-      throw new Error('Not implemented yet: "footnoteReference" case');
-
     case "listItem":
       return <li {...props.attributes}>{props.children}</li>;
 
-    case "tableRow":
-    case "tableCell":
     case "link":
+      return <a {...props.attributes}>{props.children}</a>;
+
+    case "table":
+      return <table {...props.attributes}>{props.children}</table>;
+
+    case "tableRow":
+      return <tr {...props.attributes}>{props.children}</tr>;
+
+    case "tableCell":
+      return <td {...props.attributes}>{props.children}</td>;
+
+    case "code":
+      return (
+        <pre {...props.attributes}>
+          <code>{props.children}</code>
+        </pre>
+      );
+
+    case "inlineCode":
+      return <code {...props.attributes}>{props.children}</code>;
+
+    case "html":
+    case "yaml":
+    case "definition":
+    case "footnoteDefinition":
     case "linkReference":
-    case "text":
       throw new Error('Not implemented yet: "footnoteReference" case');
 
     case "emphasis":
@@ -125,7 +141,6 @@ const Element = (props: RenderElementProps) => {
     case "break":
     case "image":
     case "footnote":
-    case "inlineCode":
       throw new Error('Not implemented yet: "footnoteReference" case');
 
     case "thematicBreak":
