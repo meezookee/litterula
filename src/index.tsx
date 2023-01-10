@@ -8,7 +8,10 @@ import reportWebVitals from "./reportWebVitals";
 import ErrorPage from "./error-page";
 import Root, { loader as rootLoader } from "./routes/root";
 import Repository from "./routes/repository";
-import Editor, { loader as editorLoader } from "./routes/editor";
+import Editor, {
+  loader as editorLoader,
+  action as editorAction,
+} from "./routes/editor";
 
 const router = createBrowserRouter(
   [
@@ -28,6 +31,7 @@ const router = createBrowserRouter(
           element: <Editor />,
           errorElement: <ErrorPage />,
           loader: editorLoader,
+          action: editorAction,
         },
       ],
     },

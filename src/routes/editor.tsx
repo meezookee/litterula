@@ -1,4 +1,11 @@
-import { LoaderFunction, useLoaderData } from "react-router-dom";
+import {
+  ActionFunction,
+  LoaderFunction,
+  useLoaderData,
+  useLocation,
+  useParams,
+  useSubmit,
+} from "react-router-dom";
 import { pfs } from "../fs";
 import { assert, assertNonNullable } from "../util";
 import MarkdownEditor from "../components/MarkdownEditor";
@@ -17,14 +24,42 @@ export const loader: LoaderFunction = async ({
   return root.children;
 };
 
+export const action: ActionFunction = async ({
+  params: { repositoryName, "*": path },
+  request,
+}) => {
+  assertNonNullable(repositoryName);
+  assertNonNullable(path);
+  const formData = await request.formData();
+  const data = formData.get("value");
+  assert(typeof data === "string");
+  await pfs.writeFile(`/${repositoryName}/${path}`, data, {
+    mode: 0o755,
+    encoding: "utf8",
+  });
+  return null;
+};
+
 const Editor = () => {
+  const { "*": path } = useParams();
   const data = useLoaderData() as Content[];
+  const submit = useSubmit();
+  const location = useLocation();
+
+  assertNonNullable(path);
 
   return (
     <MarkdownEditor
-      initialValue={data}
+      value={data}
       onChange={(data) =>
-        console.log(serialize({ type: "root", children: data }))
+        submit(
+          { value: serialize({ type: "root", children: data }) },
+          {
+            method: "post",
+            action: location.pathname,
+            encType: "multipart/form-data",
+          }
+        )
       }
     />
   );

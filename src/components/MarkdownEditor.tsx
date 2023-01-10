@@ -32,10 +32,10 @@ function withMarkdown(editor: Editor): Editor {
 }
 
 const MarkdownEditor = ({
-  initialValue,
+  value,
   onChange,
 }: {
-  initialValue: Descendant[];
+  value: Descendant[];
   onChange(value: Descendant[]): void;
 }) => {
   const [editor] = useState(() => withReact(withMarkdown(createEditor())));
@@ -55,8 +55,15 @@ const MarkdownEditor = ({
     [editor.operations, onChange]
   );
 
+  /*
+  useEffect(() => {
+    editor.children = value;
+    editor.onChange();
+  }, [editor, value]);
+  */
+
   return (
-    <Slate editor={editor} value={initialValue} onChange={handleChange}>
+    <Slate editor={editor} value={value} onChange={handleChange}>
       <Editable renderElement={renderElement} renderLeaf={renderLeaf} />
     </Slate>
   );

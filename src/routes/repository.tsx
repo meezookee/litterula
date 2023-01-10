@@ -1,6 +1,6 @@
 import { Outlet, useMatch, useNavigate, useParams } from "react-router-dom";
 import { PageLayout } from "@primer/react";
-import { TreeView } from "@primer/react/drafts";
+import { SubTreeState, TreeView } from "@primer/react/drafts";
 import { useEffect, useState } from "react";
 import { Stats } from "@isomorphic-git/lightning-fs";
 import { basename } from "@isomorphic-git/lightning-fs/src/path";
@@ -61,16 +61,18 @@ const Entry = ({ path }: { path: string }) => {
 
 const Directory = ({ path }: { path: string }) => {
   const [paths, setPaths] = useState<string[]>([]);
+  const [state, setState] = useState<SubTreeState>("initial");
   const [isExpanded, setExpanded] = useState(false);
 
   useEffect(() => {
     if (isExpanded) {
-      void pfs
-        .readdir(path)
-        .then((relpaths) =>
-          setPaths(relpaths.map((relpath) => `${path}/${relpath}`))
-        );
+      setState("loading");
+      void pfs.readdir(path).then((relpaths) => {
+        setPaths(relpaths.map((relpath) => `${path}/${relpath}`));
+        setState("done");
+      });
     } else {
+      setState("initial");
       setPaths([]);
     }
   }, [path, isExpanded]);
@@ -85,7 +87,7 @@ const Directory = ({ path }: { path: string }) => {
         )}
       </TreeView.LeadingVisual>
       {basename(path)}
-      <TreeView.SubTree>
+      <TreeView.SubTree state={state}>
         {paths.map((path) => (
           <Entry key={path} path={path} />
         ))}
