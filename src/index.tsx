@@ -10,27 +10,30 @@ import Root, { loader as rootLoader } from "./routes/root";
 import Repository from "./routes/repository";
 import Editor, { loader as editorLoader } from "./routes/editor";
 
-const router = createBrowserRouter([
-  {
-    path: "/",
-    element: <Root />,
-    errorElement: <ErrorPage />,
-    loader: rootLoader,
-  },
-  {
-    path: "/repositories/:repositoryName",
-    element: <Repository />,
-    errorElement: <ErrorPage />,
-    children: [
-      {
-        path: "*",
-        element: <Editor />,
-        errorElement: <ErrorPage />,
-        loader: editorLoader,
-      },
-    ],
-  },
-]);
+const router = createBrowserRouter(
+  [
+    {
+      path: "/",
+      element: <Root />,
+      errorElement: <ErrorPage />,
+      loader: rootLoader,
+    },
+    {
+      path: "/repositories/:repositoryName",
+      element: <Repository />,
+      errorElement: <ErrorPage />,
+      children: [
+        {
+          path: "*",
+          element: <Editor />,
+          errorElement: <ErrorPage />,
+          loader: editorLoader,
+        },
+      ],
+    },
+  ],
+  { basename: process.env.PUBLIC_URL }
+);
 
 const root = ReactDOM.createRoot(
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
