@@ -1,13 +1,17 @@
-import { Options } from "@isomorphic-git/lightning-fs";
-import { Box, Button } from "@primer/react";
+import { Box } from "@primer/react";
 import { Link, LoaderFunction, redirect } from "react-router-dom";
-import * as git from "isomorphic-git";
-import { pfs, fs } from "../fs";
+import { arrayFromAsyncIterable } from "../util";
 
 export const loader: LoaderFunction = async () => {
-  const repositoryNames = await pfs.readdir("/");
+  const rootDirectoryHandle = await navigator.storage.getDirectory();
+  const repositoryNames = await arrayFromAsyncIterable(
+    rootDirectoryHandle.keys()
+  );
   if (repositoryNames.length === 0) {
-    await git.init({ fs, dir: "/Untitled" });
+    const untitledRepositoryDirectoryHandle =
+      await rootDirectoryHandle.getDirectoryHandle("Untitled", {
+        create: true,
+      });
     const data = `# Lorem ipsum
 
 Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
@@ -30,7 +34,12 @@ Hello, world! *Italic*, **Bold**!
 
 Bye!
 `;
-    await pfs.writeFile("/Untitled/Untitled.md", data);
+    const fileHandle = await untitledRepositoryDirectoryHandle.getFileHandle(
+      "Untitled.md",
+      { create: true }
+    );
+    const writable = await fileHandle.createWritable();
+    await writable.write(data);
     return redirect("/repositories/Untitled/Untitled.md");
   }
   if (repositoryNames.length === 1) {
@@ -46,13 +55,6 @@ const Root = () => (
       <Box>
         <Link to="/repositories">repositories</Link>
       </Box>
-      <Button
-        onClick={() => {
-          pfs.init("litterula", { wipe: true } as Options);
-        }}
-      >
-        Wipe file system
-      </Button>
     </Box>
   </Box>
 );

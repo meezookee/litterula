@@ -2,20 +2,29 @@ import { Outlet, useMatch, useNavigate, useParams } from "react-router-dom";
 import { PageLayout } from "@primer/react";
 import { SubTreeState, TreeView } from "@primer/react/drafts";
 import { useEffect, useState } from "react";
-import { Stats } from "@isomorphic-git/lightning-fs";
-import { basename } from "@isomorphic-git/lightning-fs/src/path";
 import * as Icon from "@primer/octicons-react";
-import { pfs } from "../fs";
-import { assert } from "../util";
+import { arrayFromAsyncIterable, assert, assertNonNullable } from "../util";
 
 const Repository = () => {
   const { repositoryName } = useParams();
   assert(repositoryName != null);
 
+  const [directoryHandle, setDirectoryHandle] =
+    useState<FileSystemDirectoryHandle>();
+
+  useEffect(() => {
+    navigator.storage
+      .getDirectory()
+      .then((directoryHandle) => setDirectoryHandle(directoryHandle))
+      .catch((e) => {
+        throw e;
+      });
+  }, []);
+
   return (
     <PageLayout>
       <PageLayout.Pane position="start">
-        <Explorer path={repositoryName} />
+        <Explorer directoryHandle={directoryHandle} />
       </PageLayout.Pane>
       <PageLayout.Content>
         <Outlet />
@@ -25,60 +34,64 @@ const Repository = () => {
 };
 
 // TODO: Open directory when page is transitioned
-const Explorer = ({ path }: { path: string }) => {
-  const [paths, setPaths] = useState<string[]>([]);
+const Explorer = ({
+  directoryHandle,
+}: {
+  directoryHandle?: FileSystemDirectoryHandle;
+}) => {
+  const [handles, setHandles] = useState<FileSystemHandle[]>([]);
 
   useEffect(() => {
-    void pfs
-      .readdir(`/${path}`)
-      .then((relpaths) =>
-        setPaths(relpaths.map((relpath) => `/${path}/${relpath}`))
-      );
-  }, [path]);
+    if (directoryHandle == null) {
+      return;
+    }
+
+    arrayFromAsyncIterable(directoryHandle.values())
+      .then((handles) => setHandles(handles))
+      .catch((e) => {
+        throw e;
+      });
+  }, [directoryHandle]);
 
   return (
     <TreeView>
-      {paths.map((path) => (
-        <Entry key={path} path={path} />
+      {handles.map((handle) => (
+        <Entry key={handle.name} handle={handle} />
       ))}
     </TreeView>
   );
 };
 
-const Entry = ({ path }: { path: string }) => {
-  const [stats, setStats] = useState<Stats | undefined>();
-
-  useEffect(() => {
-    void pfs.lstat(path).then(setStats);
-  }, [path]);
-
-  if (stats?.isDirectory()) {
-    return <Directory path={path} />;
+const Entry = ({ handle }: { handle: FileSystemHandle }) => {
+  if (handle instanceof FileSystemDirectoryHandle) {
+    return <Directory handle={handle} />;
+  } else if (handle instanceof FileSystemFileHandle) {
+    return <File handle={handle} />;
   } else {
-    return <File path={path} />;
+    throw new Error(`Unknown kind of FileSystemHandle ${handle.kind}`);
   }
 };
 
-const Directory = ({ path }: { path: string }) => {
-  const [paths, setPaths] = useState<string[]>([]);
+const Directory = ({ handle }: { handle: FileSystemDirectoryHandle }) => {
+  const [handles, setHandles] = useState<FileSystemHandle[]>([]);
   const [state, setState] = useState<SubTreeState>("initial");
   const [isExpanded, setExpanded] = useState(false);
 
   useEffect(() => {
     if (isExpanded) {
       setState("loading");
-      void pfs.readdir(path).then((relpaths) => {
-        setPaths(relpaths.map((relpath) => `${path}/${relpath}`));
+      void arrayFromAsyncIterable(handle.values()).then((handles) => {
+        setHandles(handles);
         setState("done");
       });
     } else {
       setState("initial");
-      setPaths([]);
+      setHandles([]);
     }
-  }, [path, isExpanded]);
+  }, [handle, isExpanded]);
 
   return (
-    <TreeView.Item id={path} onExpandedChange={setExpanded}>
+    <TreeView.Item id={handle.name} onExpandedChange={setExpanded}>
       <TreeView.LeadingVisual>
         {isExpanded ? (
           <Icon.FileDirectoryOpenFillIcon />
@@ -86,31 +99,41 @@ const Directory = ({ path }: { path: string }) => {
           <Icon.FileDirectoryFillIcon />
         )}
       </TreeView.LeadingVisual>
-      {basename(path)}
+      {handle.name}
       <TreeView.SubTree state={state}>
-        {paths.map((path) => (
-          <Entry key={path} path={path} />
+        {handles.map((handle) => (
+          <Entry key={handle.name} handle={handle} />
         ))}
       </TreeView.SubTree>
     </TreeView.Item>
   );
 };
 
-const File = ({ path }: { path: string }) => {
-  const to = `/repositories${path}`;
-  const match = useMatch({ path: to, end: true });
+const File = ({ handle }: { handle: FileSystemFileHandle }) => {
+  const [path, setPath] = useState<string>();
+  const match = useMatch({ path: path ?? "", end: true });
   const navigate = useNavigate();
+
+  useEffect(() => {
+    void navigator.storage
+      .getDirectory()
+      .then((root) => root.resolve(handle))
+      .then((entryNames) => {
+        assertNonNullable(entryNames);
+        setPath(`/repositories/${entryNames.join("/")}`);
+      });
+  }, [handle]);
 
   return (
     <TreeView.Item
-      id={path}
+      id={handle.name}
       current={match != null}
-      onSelect={() => navigate(to)}
+      onSelect={path ? () => navigate(path) : undefined}
     >
       <TreeView.LeadingVisual>
         <Icon.FileIcon />
       </TreeView.LeadingVisual>
-      {basename(path)}
+      {handle.name}
     </TreeView.Item>
   );
 };
