@@ -1,9 +1,10 @@
-@import url("sanitize/*");
-
-body {
-  color: #000;
-  background-color: #fff;
-}
+@import url("sanitize.css");
+@import url("sanitize.css/assets.css");
+@import url("sanitize.css/forms.css");
+@import url("sanitize.css/reduce-motion.css");
+@import url("sanitize.css/system-ui.css");
+@import url("sanitize.css/typography.css");
+@import url("sanitize.css/ui-monospace.css");
 
 .unknown {
   outline: thin solid red;

@@ -20,7 +20,7 @@ jobs:
           PUBLIC_URL: ${{ vars.PUBLIC_URL }}
       - uses: actions/upload-pages-artifact@v1
         with:
-          path: build/
+          path: dist/
 
   deploy:
     needs: build
