@@ -2,17 +2,7 @@ import { Box } from "@primer/react";
 import { Link, LoaderFunction, redirect } from "react-router-dom";
 import { arrayFromAsyncIterable } from "../util";
 
-export const loader: LoaderFunction = async () => {
-  const rootDirectoryHandle = await navigator.storage.getDirectory();
-  const repositoryNames = await arrayFromAsyncIterable(
-    rootDirectoryHandle.keys()
-  );
-  if (repositoryNames.length === 0) {
-    const untitledRepositoryDirectoryHandle =
-      await rootDirectoryHandle.getDirectoryHandle("Untitled", {
-        create: true,
-      });
-    const data = `# Lorem ipsum
+const data = `# Lorem ipsum
 
 Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
 Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
@@ -34,12 +24,20 @@ Hello, world! *Italic*, **Bold**!
 
 Bye!
 `;
-    const fileHandle = await untitledRepositoryDirectoryHandle.getFileHandle(
-      "Untitled.md",
-      { create: true }
-    );
-    const writable = await fileHandle.createWritable();
+
+export const loader: LoaderFunction = async () => {
+  const rootDirectory = await navigator.storage.getDirectory();
+  const repositoryNames = await arrayFromAsyncIterable(rootDirectory.keys());
+  if (repositoryNames.length === 0) {
+    const newDirectory = await rootDirectory.getDirectoryHandle("Untitled", {
+      create: true,
+    });
+    const newFile = await newDirectory.getFileHandle("Untitled.md", {
+      create: true,
+    });
+    const writable = await newFile.createWritable();
     await writable.write(data);
+    await writable.close();
     return redirect("/repositories/Untitled/Untitled.md");
   }
   if (repositoryNames.length === 1) {
