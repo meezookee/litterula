@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import MarkdownEditor from "../components/MarkdownEditor";
 import { Content, parse, serialize } from "../markdown";
+import { openFile } from "../util";
 
 const Editor = () => {
   const { repositoryName, "*": path } = useParams();
@@ -13,16 +14,11 @@ const Editor = () => {
       return;
     }
     void (async () => {
-      const fs = await navigator.storage.getDirectory();
-      const repositoryDirectory = await fs.getDirectoryHandle(repositoryName);
-      const entryNames = path.split("/");
-      let current = repositoryDirectory;
-      for (const entryName of entryNames.slice(0, -1)) {
-        current = await current.getDirectoryHandle(entryName);
-      }
-      const handle = await current.getFileHandle(
-        entryNames[entryNames.length - 1]
+      const rootDirectory = await navigator.storage.getDirectory();
+      const repositoryDirectory = await rootDirectory.getDirectoryHandle(
+        repositoryName
       );
+      const handle = await openFile(repositoryDirectory, path);
       const file = await handle.getFile();
       const data = await file.text();
       const root = parse(data);
