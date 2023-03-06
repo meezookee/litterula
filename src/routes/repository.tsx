@@ -13,12 +13,9 @@ const Repository = () => {
     useState<FileSystemDirectoryHandle>();
 
   useEffect(() => {
-    navigator.storage
+    void navigator.storage
       .getDirectory()
-      .then((directoryHandle) => setDirectoryHandle(directoryHandle))
-      .catch((e) => {
-        throw e;
-      });
+      .then((directoryHandle) => setDirectoryHandle(directoryHandle));
   }, []);
 
   return (
@@ -45,12 +42,9 @@ const Explorer = ({
     if (directoryHandle == null) {
       return;
     }
-
-    arrayFromAsyncIterable(directoryHandle.values())
-      .then((handles) => setHandles(handles))
-      .catch((e) => {
-        throw e;
-      });
+    void arrayFromAsyncIterable(directoryHandle.values()).then((handles) =>
+      setHandles(handles)
+    );
   }, [directoryHandle]);
 
   return (
