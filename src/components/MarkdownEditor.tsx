@@ -36,7 +36,7 @@ const MarkdownEditor = ({
   onChange,
 }: {
   value: Descendant[];
-  onChange(value: Descendant[]): void;
+  onChange(value: Descendant[]): void | Promise<void>;
 }) => {
   const [editor] = useState(() => withReact(withMarkdown(createEditor())));
   const renderElement = (props: RenderElementProps) => <Element {...props} />;
@@ -49,7 +49,7 @@ const MarkdownEditor = ({
           (operation) => operation.type !== "set_selection"
         )
       ) {
-        onChange(value);
+        void onChange(value);
       }
     },
     [editor.operations, onChange]
